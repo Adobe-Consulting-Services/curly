@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="505.0" prefWidth="509.0" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.adobe.ags.curly.controller.DataImporterController">
+   <children>
+      <HBox VBox.vgrow="NEVER">
+         <children>
+            <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="%dataImportWizard" textAlignment="CENTER" HBox.hgrow="ALWAYS">
+               <font>
+                  <Font name="AdobeClean-Bold" size="24.0" />
+               </font>
+               <effect>
+                  <Reflection fraction="0.7" topOffset="-10.0" topOpacity="0.33" />
+               </effect>
+               <textFill>
+                  <LinearGradient endX="1.0" endY="0.7788461538461539" startX="1.0" startY="0.44230769230769235">
+                     <stops>
+                        <Stop color="#000042" />
+                        <Stop color="#9000ff84" offset="1.0" />
+                     </stops>
+                  </LinearGradient>
+               </textFill>
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Label>
+         </children>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+         <padding>
+            <Insets bottom="4.0" />
+         </padding>
+      </HBox>
+      <Separator prefWidth="200.0" />
+      <HBox fillHeight="false" spacing="5.0" VBox.vgrow="NEVER">
+         <children>
+            <Label prefHeight="26.0" prefWidth="125.0" text="%chooseFile" />
+            <TextField fx:id="currentFileName" disable="true" editable="false" focusTraversable="false" promptText="%noFileSelected" HBox.hgrow="SOMETIMES" />
+            <Button mnemonicParsing="false" onAction="#chooseFile" text="%choose" />
+         </children>
+      </HBox>
+      <HBox fillHeight="false" spacing="5.0" VBox.vgrow="NEVER">
+         <children>
+            <Label prefHeight="26.0" prefWidth="125.0" text="%useWorksheet" HBox.hgrow="SOMETIMES" />
+            <ComboBox fx:id="worksheetSelector" prefWidth="150.0" />
+         </children>
+      </HBox>
+      <TableView fx:id="contentTable" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+      <HBox spacing="5.0">
+         <children>
+            <Label prefHeight="28.0" text="%skipTheFirst1" HBox.hgrow="SOMETIMES" />
+            <ChoiceBox fx:id="skipFirstSelection" HBox.hgrow="SOMETIMES" />
+            <Label prefHeight="28.0" text="%skipTheFirst2" />
+         </children>
+      </HBox>
+      <BorderPane>
+         <right>
+            <Button mnemonicParsing="false" onAction="#okPressed" text="%ok" BorderPane.alignment="CENTER" />
+         </right>
+      </BorderPane>
+   </children>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
+</VBox>

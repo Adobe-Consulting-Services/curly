@@ -12,86 +12,83 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
-<VBox prefHeight="341.0" prefWidth="499.0" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.adobe.ags.curly.controller.RunnerActivityController">
-   <children>
-      <HBox VBox.vgrow="NEVER">
-         <children>
-            <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="%activityMonitor" textAlignment="CENTER" HBox.hgrow="ALWAYS">
-               <font>
-                  <Font name="AdobeClean-Bold" size="24.0" />
-               </font>
-               <effect>
-                  <Reflection fraction="0.7" topOffset="-10.0" topOpacity="0.33" />
-               </effect>
-               <textFill>
-                  <LinearGradient endX="1.0" endY="0.7788461538461539" startX="1.0" startY="0.44230769230769235">
-                     <stops>
-                        <Stop color="#000042" />
-                        <Stop color="#9000ff84" offset="1.0" />
-                     </stops>
-                  </LinearGradient>
-               </textFill>
-               <HBox.margin>
-                  <Insets />
-               </HBox.margin>
-            </Label>
-         </children>
-         <opaqueInsets>
-            <Insets />
-         </opaqueInsets>
-         <padding>
-            <Insets bottom="4.0" />
-         </padding>
-      </HBox>
-      <Separator prefWidth="200.0" />
-      <GridPane hgap="10.0" vgap="5.0" VBox.vgrow="NEVER">
-        <columnConstraints>
-          <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" maxWidth="179.0" minWidth="10.0" prefWidth="120.0" />
-          <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="315.0" minWidth="10.0" prefWidth="250.0" />
-            <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" maxWidth="286.0" minWidth="10.0" prefWidth="127.0" />
-        </columnConstraints>
-        <rowConstraints>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <Label text="%overallProgress" GridPane.rowIndex="1" />
-            <ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" progress="0.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
-            <Label fx:id="statusLabel" maxWidth="1.7976931348623157E308" text="%notStarted" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" />
-            <Label text="%timeElapsed" GridPane.rowIndex="2" />
-            <Label text="%timeRemaining" GridPane.rowIndex="3" />
-            <Label text="%status" />
-            <Label fx:id="ellapsedLabel" maxWidth="1.7976931348623157E308" text="%notStarted" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" />
-            <Label fx:id="remainingLabel" maxWidth="1.7976931348623157E308" text="%notStarted" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <Label text="%reportStyle" GridPane.rowIndex="4" />
-            <ChoiceBox fx:id="reportStyle" GridPane.columnIndex="1" GridPane.hgrow="SOMETIMES" GridPane.rowIndex="4" />
-            <Button fx:id="goStopButton" mnemonicParsing="false" onAction="#goStopClicked" prefHeight="77.0" prefWidth="104.0" text="%goButton" GridPane.columnIndex="2" GridPane.rowIndex="2" GridPane.rowSpan="3" />
-         </children>
-         <VBox.margin>
-            <Insets />
-         </VBox.margin>
-      </GridPane>
-      <Separator prefWidth="200.0" />
-      <ScrollPane VBox.vgrow="ALWAYS">
-         <content>
-            <WebView fx:id="reportWebview" prefHeight="68.0" prefWidth="485.0" />
-         </content>
-      </ScrollPane>
-      <HBox alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" spacing="20.0" VBox.vgrow="NEVER">
-         <children>
-            <Button mnemonicParsing="false" onAction="#copyClicked" text="%copyToClipboard" />
-            <Button mnemonicParsing="false" onAction="#saveClicked" text="%saveReport" />
-         </children>
-         <VBox.margin>
-            <Insets />
-         </VBox.margin>
-      </HBox>
-   </children>
-   <padding>
-      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-   </padding>
+<VBox prefHeight="400.0" prefWidth="500.0" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.adobe.ags.curly.controller.RunnerActivityController">
+    <children>
+        <HBox VBox.vgrow="NEVER">
+            <children>
+                <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="%activityMonitor" textAlignment="CENTER" HBox.hgrow="ALWAYS">
+                    <font>
+                        <Font name="AdobeClean-Bold" size="24.0" />
+                    </font>
+                    <effect>
+                        <Reflection fraction="0.7" topOffset="-10.0" topOpacity="0.33" />
+                    </effect>
+                    <textFill>
+                        <LinearGradient endX="1.0" endY="0.7788461538461539" startX="1.0" startY="0.44230769230769235">
+                            <stops>
+                                <Stop color="#000042" />
+                                <Stop color="#9000ff84" offset="1.0" />
+                            </stops>
+                        </LinearGradient>
+                    </textFill>
+                    <HBox.margin>
+                        <Insets />
+                    </HBox.margin>
+                </Label>
+            </children>
+            <opaqueInsets>
+                <Insets />
+            </opaqueInsets>
+            <padding>
+                <Insets bottom="4.0" />
+            </padding>
+        </HBox>
+        <Separator prefWidth="200.0" />
+        <GridPane hgap="10.0" maxWidth="1.7976931348623157E308" vgap="5.0">
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="179.0" minWidth="10.0" prefWidth="120.0" />
+                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="250.0" />
+                <ColumnConstraints halignment="RIGHT" hgrow="NEVER" maxWidth="286.0" minWidth="10.0" prefWidth="127.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <Label text="%status" />
+                <Label fx:id="statusLabel" maxWidth="1.7976931348623157E308" text="%notStarted" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" />
+                <Label text="%overallProgress" GridPane.rowIndex="1" />
+                <ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" progress="0.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
+                <Label text="%timeElapsed" GridPane.rowIndex="2" />
+                <Label fx:id="ellapsedLabel" maxWidth="1.7976931348623157E308" text="%notStarted" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" />
+                <Label text="%timeRemaining" GridPane.rowIndex="3" />
+                <Label fx:id="remainingLabel" maxWidth="1.7976931348623157E308" text="%notStarted" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <Label text="%reportStyle" GridPane.rowIndex="4" />
+                <ChoiceBox fx:id="reportStyle" GridPane.columnIndex="1" GridPane.hgrow="SOMETIMES" GridPane.rowIndex="4" />
+                <Button fx:id="goStopButton" mnemonicParsing="false" onAction="#goStopClicked" prefHeight="77.0" prefWidth="104.0" text="%goButton" GridPane.columnIndex="2" GridPane.rowIndex="2" GridPane.rowSpan="3" />
+            </children>
+        </GridPane>
+        <Separator prefWidth="200.0" />
+        <ScrollPane fitToHeight="true" fitToWidth="true" VBox.vgrow="ALWAYS">
+            <content>
+                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+                    <children>
+                        <WebView fx:id="reportWebview" minHeight="-1.0" minWidth="-1.0" prefHeight="130.0" prefWidth="485.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    </children>
+                </AnchorPane>
+            </content>
+        </ScrollPane>
+        <HBox alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" spacing="20.0" VBox.vgrow="NEVER">
+            <children>
+                <Button mnemonicParsing="false" onAction="#copyClicked" text="%copyToClipboard" />
+                <Button mnemonicParsing="false" onAction="#saveClicked" text="%saveReport" />
+            </children>
+        </HBox>
+    </children>
+    <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+    </padding>
 </VBox>
