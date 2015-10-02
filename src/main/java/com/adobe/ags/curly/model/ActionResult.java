@@ -120,4 +120,13 @@ public class ActionResult implements RunnerResult {
             completionProperty.set(d);
         });
     }
+    
+    @Override
+    public String toHtml(int level) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<tr>");
+        reportRow.forEach(value->sb.append("<td>").append(value.toString()).append("</td>"));
+        sb.append("</tr>");
+        return sb.toString();
+    }    
 }

@@ -20,6 +20,8 @@ import static com.adobe.ags.curly.Messages.NO_DATA_LOADED;
 import com.adobe.ags.curly.model.Action;
 import com.sun.javafx.collections.ObservableListWrapper;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -87,9 +89,6 @@ public class AppController {
     @FXML // fx:id="singleShotStatus"
     private Label singleShotStatus; // Value injected by FXMLLoader
 
-    @FXML // fx:id="singleShotButton"
-    private Button singleShotButton; // Value injected by FXMLLoader
-
     @FXML // fx:id="batchDataTable"
     private TableView<Map<String, String>> batchDataTable;
     
@@ -138,9 +137,18 @@ public class AppController {
 
     @FXML
     void singleShotClicked(ActionEvent event) {
-        
+        List<Map<String,String>> blankRow = new ArrayList<>();
+        blankRow.add(new HashMap<>());
+        BatchRunner runner = new BatchRunner(loginHandler, concurencyChoice.getValue(), getActions(), blankRow, defaults, defaults.keySet());
+        CurlyApp.getInstance().openActivityMonitor(runner);        
     }
 
+    @FXML
+    void batchStartClicked(ActionEvent event) {
+        BatchRunner runner = new BatchRunner(loginHandler, concurencyChoice.getValue(), getActions(), batchDataTable.getItems(), defaults, defaults.keySet());
+        CurlyApp.getInstance().openActivityMonitor(runner);
+    }
+    
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         assert connectionTab != null : "fx:id=\"connectionTab\" was not injected: check your FXML file 'App.fxml'.";
@@ -152,7 +160,6 @@ public class AppController {
         assert actionList != null : "fx:id=\"actionList\" was not injected: check your FXML file 'App.fxml'.";
         assert oneShotGrid != null : "fx:id=\"oneShotGrid\" was not injected: check your FXML file 'App.fxml'.";
         assert singleShotStatus != null : "fx:id=\"singleShotStatus\" was not injected: check your FXML file 'App.fxml'.";
-        assert singleShotButton != null : "fx:id=\"singleShotButton\" was not injected: check your FXML file 'App.fxml'.";
         assert batchDataTable != null : "fx:id=\"batchDataTable\" was not injected: check your FXML file 'App.fxml'.";
         assert concurencyChoice != null : "fx:id=\"concurencyChoice\" was not injected: check your FXML file 'App.fxml'.";
         assert batchRunStatus != null : "fx:id=\"batchRunStatus\" was not injected: check your FXML file 'App.fxml'.";

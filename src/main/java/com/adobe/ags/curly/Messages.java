@@ -30,6 +30,7 @@ public class Messages {
     public static final String MISSING_NVP_HEADER_ERROR = "missingNameValuePairHeader";
     public static final String NO_DATA_LOADED = "noDataLoaded";
     public static final String NOT_STARTED = "notStarted";
+    public static final String STOP = "stop";
     public static final String UNKNOWN_METHOD_ERROR = "unknownMethodError";
     public static final String UNKNOWN_PARAMETER = "unknownParameter";
     public static final String UNSUPPORTED_METHOD_ERROR = "unsupportedMethodError";

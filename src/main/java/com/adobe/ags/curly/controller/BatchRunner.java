@@ -31,6 +31,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.StringProperty;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 public class BatchRunner implements TaskRunner {
@@ -40,13 +42,13 @@ public class BatchRunner implements TaskRunner {
     int concurrency;
     ThreadLocal<CloseableHttpClient> clientThread;
 
-    public BatchRunner(AuthHandler auth, int concurrency, List<Action> actions, List<Map<String, String>> batchData, Map<String, String> defaultValues, Set<String> displayColumns) {
+    public BatchRunner(AuthHandler auth, int concurrency, List<Action> actions, List<Map<String, String>> batchData, Map<String, StringProperty> defaultValues, Set<String> displayColumns) {
+        clientThread = ThreadLocal.withInitial(auth::getAuthenticatedClient);
         result = new BatchRunnerResult();
         tasks = new ArrayBlockingQueue<>(batchData.size());
         this.concurrency = concurrency;
-        defaultValues.put("server", auth.getUrlBase());
+        defaultValues.put("server", new ReadOnlyStringWrapper(auth.getUrlBase()));
         buildTasks(actions, batchData, defaultValues, displayColumns);
-        clientThread = ThreadLocal.withInitial(auth::getAuthenticatedClient);
     }
     
     @Override
@@ -56,17 +58,29 @@ public class BatchRunner implements TaskRunner {
 
     @Override
     public void run() {
-        CurlyApp.getInstance().runningProperty().set(true);
-        executor = new ThreadPoolExecutor(concurrency, concurrency, 1, TimeUnit.DAYS, tasks);        
+        try {
+            CurlyApp.getInstance().runningProperty().set(true);
+            executor = new ThreadPoolExecutor(concurrency, concurrency, 1, TimeUnit.DAYS, tasks);
+            result.start();
+            executor.execute(()->result.successfulProperty().set(true));
+            executor.awaitTermination(1, TimeUnit.DAYS);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(BatchRunner.class.getName()).log(Level.SEVERE, null, ex);
+            if (!executor.isShutdown()) {
+                executor.getQueue().clear();
+            }
+            result.successfulProperty().set(false);
+        }
+        result.stop();
     }
 
-    private void buildTasks(List<Action> actions, List<Map<String, String>> batchData, Map<String, String> defaultValues, Set<String> displayColumns) {
+    private void buildTasks(List<Action> actions, List<Map<String, String>> batchData, Map<String, StringProperty> defaultValues, Set<String> displayColumns) {
         batchData.forEach(data->{
             try {
                 Map<String,String> values = new HashMap<>(data);
                 defaultValues.forEach((key,value)-> {
                     if (values.get(key) == null || values.get(key).isEmpty()) {
-                        values.put(key,value);
+                        values.put(key,value.get());
                     }
                 });
                 ActionGroupRunner runner = new ActionGroupRunner(clientThread::get, actions, values, displayColumns);

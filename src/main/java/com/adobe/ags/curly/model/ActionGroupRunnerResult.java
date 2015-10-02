@@ -97,4 +97,16 @@ public class ActionGroupRunnerResult implements RunnerResult<ActionResult> {
         row.add(Bindings.concat(Bindings.multiply(completionPercentage, 100), "%"));
         reportColumns.forEach((colName) -> row.add(new SimpleStringProperty(variables.get(colName))));
     }
+    
+    @Override
+    public String toHtml(int level) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<tr>");
+        row.forEach(value->sb.append("<td>").append(value.toString()).append("</td>"));
+        sb.append("</tr>");
+        if (level > 1) {
+            results.values().forEach(result->sb.append(result.toHtml(level)));
+        }
+        return sb.toString();
+    }
 }

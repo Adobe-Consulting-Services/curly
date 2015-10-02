@@ -17,7 +17,9 @@ package com.adobe.ags.curly;
 
 import com.adobe.ags.curly.controller.ActionPanelController;
 import com.adobe.ags.curly.controller.AppController;
+import com.adobe.ags.curly.controller.BatchRunner;
 import com.adobe.ags.curly.controller.DataImporterController;
+import com.adobe.ags.curly.controller.RunnerActivityController;
 import com.adobe.ags.curly.model.Action;
 import java.io.IOException;
 import java.util.List;
@@ -122,9 +124,28 @@ public class CurlyApp extends Application {
             popup.showAndWait();
         } catch (IOException ex) {
             Logger.getLogger(CurlyApp.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+        }        
     }
+    
+    public void openActivityMonitor(BatchRunner runner) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RunnerReport.fxml"));
+            loader.setResources(i18n);
+            loader.load();
+            RunnerActivityController runnerActivityController = loader.getController();
+            
+            Stage popup = new Stage();
+            popup.setScene(new Scene(loader.getRoot()));
+            popup.initModality(Modality.APPLICATION_MODAL);
+            popup.initOwner(applicationWindow);
+                        
+            runnerActivityController.attachRunner(runner);
+            
+            popup.showAndWait();
+        } catch (IOException ex) {
+            Logger.getLogger(CurlyApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
     
     @Override
     public void start(Stage stage) throws Exception {

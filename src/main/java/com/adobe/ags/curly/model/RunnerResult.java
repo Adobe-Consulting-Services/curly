@@ -26,4 +26,5 @@ public interface RunnerResult<T extends RunnerResult> {
     public DoubleProperty percentComplete();
     public ObservableList<ObservableValue> reportRow();
     public Collection<T> getDetails();
+    public String toHtml(int level);
 }

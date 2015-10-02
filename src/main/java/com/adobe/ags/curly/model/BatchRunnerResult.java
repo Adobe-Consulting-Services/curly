@@ -82,6 +82,14 @@ public class BatchRunnerResult implements RunnerResult<ActionGroupRunnerResult> 
         timeRemaining.set(totalTime - ellapsed);
     }
 
+    public LongProperty timeEllapsedProperty() {
+        return timeEllapsed;
+    }
+
+    public LongProperty timeRemainingProperty() {
+        return timeRemaining;
+    }
+    
     @Override
     public BooleanProperty successfulProperty() {
         return successful;
@@ -113,5 +121,18 @@ public class BatchRunnerResult implements RunnerResult<ActionGroupRunnerResult> 
         DoubleBinding totalComplete = Bindings.createDoubleBinding(()
                 -> completeList.stream().map(DoubleProperty::get).reduce(0.0, (total, val) -> total + val), completeList.toArray(new DoubleProperty[0]));
         completedPercent.bind(Bindings.divide(totalComplete, (double) completeList.size()));
+    }
+
+    @Override
+    public String toHtml(int level) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table><tr>");
+        row.forEach(value->sb.append("<td>").append(value.toString()).append("</td>"));
+        sb.append("</tr>");
+        if (level > 0) {
+            details.forEach(result->sb.append(result.toHtml(level)));
+        }
+        sb.append("</table>");
+        return sb.toString();
     }
 }
