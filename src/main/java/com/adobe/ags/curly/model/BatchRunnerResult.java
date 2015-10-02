@@ -48,7 +48,7 @@ public class BatchRunnerResult implements RunnerResult<ActionGroupRunnerResult> 
 
     public BatchRunnerResult() {
         details.addListener((ListChangeListener.Change<? extends RunnerResult> c) -> {
-            if (c.wasAdded()) {
+            if (c.next() && c.wasAdded()) {
                 updateAccumulatedProperties();
             }
         });

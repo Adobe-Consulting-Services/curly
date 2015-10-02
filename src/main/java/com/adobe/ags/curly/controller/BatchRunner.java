@@ -62,7 +62,7 @@ public class BatchRunner implements TaskRunner {
             CurlyApp.getInstance().runningProperty().set(true);
             executor = new ThreadPoolExecutor(concurrency, concurrency, 1, TimeUnit.DAYS, tasks);
             result.start();
-            executor.execute(()->result.successfulProperty().set(true));
+//            executor.execute(()->result.successfulProperty().set(true));
             executor.awaitTermination(1, TimeUnit.DAYS);
         } catch (InterruptedException ex) {
             Logger.getLogger(BatchRunner.class.getName()).log(Level.SEVERE, null, ex);
