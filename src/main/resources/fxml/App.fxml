@@ -117,7 +117,7 @@ limitations under the License.
                                         <Label fx:id="singleShotStatus" prefHeight="26.0" prefWidth="461.0" BorderPane.alignment="CENTER" />
                                     </left>
                                     <right>
-                                        <Button fx:id="singleShotButton" mnemonicParsing="false" onAction="#singleShotClicked" text="%goButton" BorderPane.alignment="CENTER" />
+                                        <Button mnemonicParsing="false" onAction="#singleShotClicked" text="%goButton" BorderPane.alignment="CENTER" />
                                     </right>
                                 </BorderPane>
                             </children>
@@ -146,11 +146,12 @@ limitations under the License.
                                         </HBox>
                                     </left>
                                     <right>
-                                        <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0" BorderPane.alignment="CENTER">
+                                        <HBox prefHeight="100.0" spacing="10.0" BorderPane.alignment="CENTER">
                                             <children>
-                                                <Button mnemonicParsing="false" text="%run" />
-                                                <Button mnemonicParsing="false" text="%resume" />
-                                                <Button mnemonicParsing="false" text="%stop" />
+                                                <Button mnemonicParsing="false" onAction="#batchStartClicked" text="%goButton">
+                                       <HBox.margin>
+                                          <Insets right="5.0" />
+                                       </HBox.margin></Button>
                                             </children>
                                             <BorderPane.margin>
                                                 <Insets />

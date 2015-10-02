@@ -159,7 +159,6 @@ public class DataImporterController {
     }
 
     private void openTextFile(File file) throws FileNotFoundException {
-        worksheetSelector.setItems(null);
         BufferedReader reader = new BufferedReader(new FileReader(file));
         setTableData(reader.lines().map(line->Arrays.asList(line.split("\\t"))).collect(Collectors.toList()));
     }
