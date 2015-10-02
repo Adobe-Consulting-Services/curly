@@ -46,7 +46,7 @@ public class ActionGroupRunnerResult implements RunnerResult<ActionResult> {
 
     public ActionGroupRunnerResult(List<Action> actions, Map<String, String> variables, Set<String> reportColumns) {
         results = new LinkedHashMap<>();
-        results.keySet().addAll(actions);
+        actions.forEach(action->results.put(action, null));
         row = new ObservableListWrapper<>(new ArrayList<>());
         buildRow(variables, reportColumns);
     }
