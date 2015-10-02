@@ -12,7 +12,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <VBox prefHeight="341.0" prefWidth="499.0" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.adobe.ags.curly.controller.RunnerActivityController">
    <children>
       <HBox VBox.vgrow="NEVER">
@@ -48,7 +47,7 @@
       <GridPane hgap="10.0" vgap="5.0" VBox.vgrow="NEVER">
         <columnConstraints>
           <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" maxWidth="179.0" minWidth="10.0" prefWidth="120.0" />
-          <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="315.0" minWidth="10.0" prefWidth="250.0" />
+          <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" />
             <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" maxWidth="286.0" minWidth="10.0" prefWidth="127.0" />
         </columnConstraints>
         <rowConstraints>
@@ -76,7 +75,7 @@
          </VBox.margin>
       </GridPane>
       <Separator prefWidth="200.0" />
-      <ScrollPane VBox.vgrow="ALWAYS">
+      <ScrollPane fitToHeight="true" fitToWidth="true" pannable="true" VBox.vgrow="ALWAYS">
          <content>
             <WebView fx:id="reportWebview" prefHeight="68.0" prefWidth="485.0" />
          </content>
