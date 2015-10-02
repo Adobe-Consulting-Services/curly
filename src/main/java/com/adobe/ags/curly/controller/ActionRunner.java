@@ -163,7 +163,7 @@ public class ActionRunner implements Runnable {
         List<String> variableTokens = action.getVariableNames();
         int tokenCounter = 0;
         for (String var : variableTokens) {
-            str = str.replaceAll(Pattern.quote("${" + var + "}"), "${" + (tokenCounter++) + "}");
+            str = str.replaceAll(Pattern.quote("${" + var + "}"), Matcher.quoteReplacement("${" + (tokenCounter++) + "}"));
         }
         return str;
     }
@@ -172,7 +172,7 @@ public class ActionRunner implements Runnable {
         List<String> variableTokens = action.getVariableNames();
         int tokenCounter = 0;
         for (String var : variableTokens) {
-            str = str.replaceAll(Pattern.quote("${" + (tokenCounter++) + "}"), "${" + var + "}");
+            str = str.replaceAll(Pattern.quote("${" + (tokenCounter++) + "}"), Matcher.quoteReplacement("${" + var + "}"));
         }
         return str;
     }
@@ -239,9 +239,9 @@ public class ActionRunner implements Runnable {
             String var = parts[0];
             String replaceVar = Pattern.quote("${" + originalName + "}");
             postVariables.forEach((param, value) -> {
-                String newParam = param.replaceAll(replaceVar, variables.get(var));
+                String newParam = param.replaceAll(replaceVar, Matcher.quoteReplacement(variables.get(var)));
                 value = newValues.containsKey(newParam) ? newValues.get(newParam) : variables.get(var);
-                String newValue = param.replaceAll(replaceVar, value);
+                String newValue = param.replaceAll(replaceVar, Matcher.quoteReplacement(value));
                 if (!newParam.equals(param) || !newValue.equals(value)) {
                     removeSet.add(param);
                     newValues.put(newParam, newValue);
