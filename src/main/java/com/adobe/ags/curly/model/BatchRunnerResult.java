@@ -127,7 +127,7 @@ public class BatchRunnerResult implements RunnerResult<ActionGroupRunnerResult> 
     public String toHtml(int level) {
         StringBuilder sb = new StringBuilder();
         sb.append("<table><tr>");
-        row.forEach(value->sb.append("<td>").append(value.toString()).append("</td>"));
+        row.forEach(value->sb.append("<td>").append(value.getValue().toString()).append("</td>"));
         sb.append("</tr>");
         if (level > 0) {
             details.forEach(result->sb.append(result.toHtml(level)));

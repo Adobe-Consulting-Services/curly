@@ -161,14 +161,21 @@ public class RunnerActivityController {
     }
     
     private void disableReportGenerator() {
-        reportTask.cancel(false);
-        reportGenerator.shutdown();
-        reportGenerator = null;
+        if (reportGenerator != null) {
+            reportTask.cancel(false);
+            reportGenerator.shutdown();
+            reportGenerator = null;
+        }
     }    
     
     private void generateReport() {
-        if (results != null) {
-            reportWebview.getEngine().loadContent(results.toHtml(reportStyle.getSelectionModel().getSelectedItem().level));
+        try {
+            if (results != null) {
+                String html = results.toHtml(reportStyle.getSelectionModel().getSelectedItem().level);
+                Platform.runLater(()->reportWebview.getEngine().loadContent(html));
+            }
+        } catch (Throwable t) {
+            Logger.getLogger(RunnerActivityController.class.getName()).log(Level.SEVERE, null, t);
         }
     }
 }

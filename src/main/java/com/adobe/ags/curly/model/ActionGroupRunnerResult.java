@@ -102,10 +102,12 @@ public class ActionGroupRunnerResult implements RunnerResult<ActionResult> {
     public String toHtml(int level) {
         StringBuilder sb = new StringBuilder();
         sb.append("<tr>");
-        row.forEach(value->sb.append("<td>").append(value.toString()).append("</td>"));
+        row.forEach(value->sb.append("<td>").append(value.getValue().toString()).append("</td>"));
         sb.append("</tr>");
         if (level > 1) {
-            results.values().forEach(result->sb.append(result.toHtml(level)));
+            if (results != null) {
+                results.values().stream().filter(f->f!=null).forEach(result->sb.append(result.toHtml(level)));
+            }
         }
         return sb.toString();
     }
