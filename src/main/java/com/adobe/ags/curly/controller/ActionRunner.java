@@ -34,6 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -234,17 +236,23 @@ public class ActionRunner implements Runnable {
 
         Set removeSet = new HashSet<>();
         Map<String, String> newValues = new HashMap<>();
-        variableTokens.forEach((String originalName) -> {
-            String[] parts = originalName.split("\\|");
-            String var = parts[0];
-            String replaceVar = Pattern.quote("${" + originalName + "}");
-            postVariables.forEach((param, value) -> {
-                String newParam = param.replaceAll(replaceVar, Matcher.quoteReplacement(variables.get(var)));
-                value = newValues.containsKey(newParam) ? newValues.get(newParam) : variables.get(var);
-                String newValue = param.replaceAll(replaceVar, Matcher.quoteReplacement(value));
-                if (!newParam.equals(param) || !newValue.equals(value)) {
-                    removeSet.add(param);
-                    newValues.put(newParam, newValue);
+        
+        postVariables.forEach((paramName, paramValue) -> {
+            StringProperty paramNameProperty = new SimpleStringProperty(paramName);
+            variableTokens.forEach((String originalName) -> {
+                String[] variableNameParts = originalName.split("\\|");
+                String variableName = variableNameParts[0];
+                String variableNameMatchPattern = Pattern.quote("${" + originalName + "}");
+                String variableValue = Matcher.quoteReplacement(variables.get(variableName));
+                //----
+                String newParamValue = newValues.containsKey(paramNameProperty.get()) ? newValues.get(paramNameProperty.get()) : paramValue;
+                String newParamName = paramNameProperty.get().replaceAll(variableNameMatchPattern, variableValue);
+                paramNameProperty.set(newParamName);
+                newParamValue = newParamValue.replaceAll(variableNameMatchPattern, variableValue);
+                if (!newParamName.equals(paramName) || !newParamValue.equals(paramValue)) {
+                    removeSet.add(paramNameProperty.get());
+                    removeSet.add(paramName);
+                    newValues.put(newParamName, newParamValue);
                 }
             });
         });
