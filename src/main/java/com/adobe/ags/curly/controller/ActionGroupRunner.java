@@ -40,7 +40,7 @@ public class ActionGroupRunner implements TaskRunner {
     BooleanProperty skipTheRest = new SimpleBooleanProperty(false);
     ActionGroupRunnerResult results;
 
-    public ActionGroupRunner(Supplier<CloseableHttpClient> client, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) throws ParseException {
+    public ActionGroupRunner(String taskName, Supplier<CloseableHttpClient> client, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) throws ParseException {
         this.actions = new LinkedHashMap<>();
         actions.forEach((action)->{
             ActionRunner runner = null;
@@ -55,7 +55,7 @@ public class ActionGroupRunner implements TaskRunner {
             }
         });
         vars = variables;
-        results = new ActionGroupRunnerResult(actions, variables, reportColumns);
+        results = new ActionGroupRunnerResult(taskName, actions, variables, reportColumns);
     }
 
     @Override

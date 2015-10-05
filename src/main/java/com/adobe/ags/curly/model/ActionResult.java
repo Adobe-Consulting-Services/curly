@@ -27,7 +27,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -77,38 +80,75 @@ public class ActionResult implements RunnerResult {
     public void processHttpResponse(CloseableHttpResponse httpResponse, Action.ResultType resultType) throws IOException {
         StatusLine status = httpResponse.getStatusLine();
         String statusKey = COMPLETED_SUCCESSFUL;
+        boolean successfulResponseCode = false;
         if (status.getStatusCode() >= 200 && status.getStatusCode() < 400) {
-            Platform.runLater(() -> {
-                successfulProperty.set(true);
-            });
+            successfulResponseCode = true;
         } else {
             statusKey = COMPLETED_UNSUCCESSFUL;
         }
         if (resultType == Action.ResultType.html) {
-            setStatus(statusKey, status.getStatusCode(), status.getReasonPhrase() + " / " + extractHtmlMessage(httpResponse));
+            ParsedResponseMessage message = extractHtmlMessage(httpResponse).orElse(UNKNOWN_RESPONSE);
+            if (message.type == RESULT_TYPE.FAIL) {
+                successfulResponseCode = false;
+                statusKey = COMPLETED_UNSUCCESSFUL;
+            }
+            setStatus(statusKey, status.getStatusCode(), status.getReasonPhrase() + " / " + message.message);
         } else {
             setStatus(statusKey, status.getStatusCode(), status.getReasonPhrase());
         }
+        successfulProperty.set(successfulResponseCode);
     }
 
     List<String> responseMessage;
+    private final static ParsedResponseMessage UNKNOWN_RESPONSE = new ParsedResponseMessage(RESULT_TYPE.WARN, CurlyApp.getMessage(COULD_NOT_DETECT_RESPONSE_STATUS));
 
-    public String extractHtmlMessage(CloseableHttpResponse httpResponse) throws IOException {
+    public static enum RESULT_TYPE {
+        NEUTRAL(
+            // These are successful or unsuccessful depending on the status code
+                Pattern.compile(".*?"+Pattern.quote("<div id=\"Message\">") + "(.*)")
+        ),
+        WARN(),
+        FAIL(
+            // Regardless of status code, if these are detected the operation should log as failure
+                Pattern.compile(".*?"+Pattern.quote("<div class=\"error\">") + "(.*?)" + Pattern.quote("</div>"))
+        );
+
+        Pattern[] patterns;
+
+        RESULT_TYPE(Pattern... p) {
+            patterns = p;
+        }
+    };
+
+    private static class ParsedResponseMessage {
+
+        RESULT_TYPE type;
+        String message;
+
+        public ParsedResponseMessage(RESULT_TYPE type, String message) {
+            this.type = type;
+            this.message = message;
+        }
+    }
+
+    private Optional<ParsedResponseMessage> extractHtmlMessage(CloseableHttpResponse httpResponse) throws IOException {
         InputStreamReader reader = new InputStreamReader(httpResponse.getEntity().getContent());
-        Optional<String> message;
+        Stream<String> lines = new BufferedReader(reader).lines();
         if (debugMode) {
-            responseMessage = new BufferedReader(reader).lines().collect(Collectors.toList());
-            message = responseMessage.stream().filter(line -> line.contains("div id=\"Message\"")).findFirst();
-        } else {
-            message = new BufferedReader(reader).lines()
-                    .filter((String line) -> line.contains("div id=\"Message\"")).findFirst();
+            responseMessage = lines.collect(Collectors.toList());
+            lines = responseMessage.stream();
         }
-
-        if (!message.isPresent()) {
-            return CurlyApp.getMessage(COULD_NOT_DETECT_RESPONSE_STATUS);
-        }
-        String msg = message.get();
-        return msg.substring(msg.lastIndexOf("\"Message\">") + 10);
+        return lines.map(line -> {
+            for (RESULT_TYPE resultType : RESULT_TYPE.values()) {
+                for (Pattern p : resultType.patterns) {
+                    Matcher m = p.matcher(line);
+                    if (m.matches()) {
+                        return new ParsedResponseMessage(resultType, line);
+                    }
+                }
+            }
+            return null;
+        }).filter(e -> e != null).findFirst();
     }
 
     @Override

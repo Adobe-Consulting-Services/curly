@@ -80,7 +80,9 @@ public class BatchRunner implements TaskRunner {
     }
 
     private void buildTasks(List<Action> actions, List<Map<String, String>> batchData, Map<String, StringProperty> defaultValues, Set<String> displayColumns) {
-        batchData.forEach(data->{
+        int row = 0;
+        for (Map<String,String> data : batchData) {
+            row++;
             try {
                 Map<String,String> values = new HashMap<>(data);
                 defaultValues.forEach((key,value)-> {
@@ -88,12 +90,12 @@ public class BatchRunner implements TaskRunner {
                         values.put(key,value.get());
                     }
                 });
-                ActionGroupRunner runner = new ActionGroupRunner(clientThread::get, actions, values, displayColumns);
+                ActionGroupRunner runner = new ActionGroupRunner("Row "+row,clientThread::get, actions, values, displayColumns);
                 result.getDetails().add(runner.results);
                 tasks.add(runner);
             } catch (ParseException ex) {
                 Logger.getLogger(BatchRunner.class.getName()).log(Level.SEVERE, null, ex);
             }
-        });
+        }
     }
 }

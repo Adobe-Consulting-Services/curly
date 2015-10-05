@@ -31,6 +31,8 @@ import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -39,12 +41,14 @@ import javafx.collections.ObservableList;
 
 public class ActionGroupRunnerResult implements RunnerResult<ActionResult> {
 
+    String task;
     Map<Action, ActionResult> results;
     DoubleProperty completionPercentage = new SimpleDoubleProperty(0);
     BooleanProperty successfulProperty = new SimpleBooleanProperty(false);
     ObservableList<ObservableValue> row;
 
-    public ActionGroupRunnerResult(List<Action> actions, Map<String, String> variables, Set<String> reportColumns) {
+    public ActionGroupRunnerResult(String taskName, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) {
+        task = taskName;
         results = new LinkedHashMap<>();
         actions.forEach(action->results.put(action, null));
         row = new ObservableListWrapper<>(new ArrayList<>());
@@ -93,6 +97,7 @@ public class ActionGroupRunnerResult implements RunnerResult<ActionResult> {
         StringBinding successOrNot = Bindings.when(successfulProperty)
                 .then(CurlyApp.getMessage(COMPLETED_SUCCESSFUL))
                 .otherwise(CurlyApp.getMessage(COMPLETED_UNSUCCESSFUL));
+        row.add(new ReadOnlyStringWrapper(task));
         row.add(Bindings.when(Bindings.greaterThanOrEqual(completionPercentage, 1)).then(successOrNot).otherwise(CurlyApp.getMessage(INCOMPLETE)));
         row.add(Bindings.concat(Bindings.multiply(completionPercentage, 100), "%"));
         reportColumns.forEach((colName) -> row.add(new SimpleStringProperty(variables.get(colName))));

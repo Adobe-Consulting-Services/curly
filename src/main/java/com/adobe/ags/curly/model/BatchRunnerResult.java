@@ -29,6 +29,7 @@ import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.LongProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
@@ -53,14 +54,15 @@ public class BatchRunnerResult implements RunnerResult<ActionGroupRunnerResult> 
             }
         });
 
-        row.add(Bindings.concat(Bindings.multiply(completedPercent, 100), "%"));
-        row.add(successful);
-
+        row.add(new ReadOnlyStringWrapper("Batch run"));
+        
         StringBinding successOrNot = Bindings.when(successful)
                 .then(CurlyApp.getMessage(COMPLETED_SUCCESSFUL))
                 .otherwise(CurlyApp.getMessage(COMPLETED_UNSUCCESSFUL));
         row.add(Bindings.when(Bindings.greaterThanOrEqual(completedPercent, 1))
                 .then(successOrNot).otherwise(CurlyApp.getMessage(INCOMPLETE)));
+
+        row.add(Bindings.concat(Bindings.multiply(completedPercent, 100), "%"));
     }
 
     public void start() {
