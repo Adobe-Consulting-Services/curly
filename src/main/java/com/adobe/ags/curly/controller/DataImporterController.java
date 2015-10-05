@@ -31,15 +31,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
@@ -241,14 +240,11 @@ public class DataImporterController {
     }
     
     private ComboBox<String> generateVariableSelector() {
-        ObservableList<String> vars = new ObservableListWrapper<>(new ArrayList<>());
-        Optional<Stream<String>> allVars = actions.stream().map(Action::getVariableNames).map(List::stream).reduce(Stream::concat);
-        TreeSet sortedVars = new TreeSet();
-        allVars.ifPresent(s->sortedVars.addAll(
-                s.map(var -> var.contains("|") ? var.substring(0, var.indexOf('|')) : var)
-                .collect(Collectors.toSet())));
+        Set vars = new TreeSet<>();
+        actions.stream().map(Action::getVariableNames).forEach(vars::addAll);
+        ComboBox<String> box = new ComboBox<>();
         vars.add(DONT_USE);
-        vars.addAll(sortedVars);
-        return new ComboBox<>(vars);
+        box.getItems().addAll(vars);
+        return box;
     }
 }

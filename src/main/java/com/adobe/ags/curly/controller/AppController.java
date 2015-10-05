@@ -39,7 +39,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -190,19 +189,16 @@ public class AppController {
     }
 
     private void buildVariableGrid(ListChangeListener.Change<? extends Action> change) {
-        Set<String> variablesInUse = new TreeSet<>();
-        change.getList().forEach((Action a) -> variablesInUse.addAll(a.getVariableNames()));
-        defaults.keySet().retainAll(variablesInUse);
+        Map<String, String> variablesWithDefaults = new TreeMap<>();
+        change.getList().forEach((Action a) -> variablesWithDefaults.putAll(a.getVariablesWithDefaults()));
+        defaults.keySet().retainAll(variablesWithDefaults.keySet());
 
         oneShotGrid.getChildren().clear();
         final AtomicInteger row = new AtomicInteger(0);
-        variablesInUse.forEach((rawVar) -> {
-            String[] parts = rawVar.split("\\|");
-            String var = parts[0];
+        variablesWithDefaults.forEach((var,defaultValue) -> {
             if (var.equalsIgnoreCase("server")) {
                 return;
             }
-            String defaultValue = (parts.length == 2) ? parts[1] : "";
             if (!defaults.containsKey(var)) {
                 defaults.put(var, new SimpleStringProperty(defaultValue));
             }

@@ -16,8 +16,10 @@
 package com.adobe.ags.curly.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +38,7 @@ public class Action implements Serializable {
     public void setResultType(ResultType resultType) {
         this.resultType = resultType;
     }
+
     public static enum ResultType {html, json, plain};
     private String name;
     private String description;
@@ -93,14 +96,36 @@ public class Action implements Serializable {
     }
     
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(.*?)\\}");
-    public List<String> getVariableNames() {
-        ArrayList<String> names = new ArrayList();
+    public Set<String> getVariableNames() {
+        Set<String> names = new TreeSet();
         if (command != null && !command.isEmpty()) {
             Matcher matches = VARIABLE_PATTERN.matcher(command);
             while (matches.find()) {
-                names.add(matches.group(1));
+                String rawVariableName = matches.group(1);
+                String variableName = rawVariableName.contains("|") ? 
+                        rawVariableName.substring(0, rawVariableName.indexOf('|')) : 
+                        rawVariableName;
+                names.add(variableName);
             }
         }
         return names;
     }
+    
+    public Map<String, String> getVariablesWithDefaults() {
+        Map<String, String> variableDefaults = new TreeMap<>();
+        if (command != null && !command.isEmpty()) {
+            Matcher matches = VARIABLE_PATTERN.matcher(command);
+            while (matches.find()) {
+                String rawVariableName = matches.group(1);
+                String variableName = rawVariableName.contains("|") ? 
+                        rawVariableName.substring(0, rawVariableName.indexOf('|')) : 
+                        rawVariableName;
+                String value = rawVariableName.contains("|") ? 
+                        rawVariableName.substring(rawVariableName.indexOf('|')+1) : 
+                        null;
+                variableDefaults.put(variableName, value);
+            }
+        }
+        return variableDefaults;
+    }    
 }

@@ -162,16 +162,17 @@ public class ActionRunner implements Runnable {
     }
 
     private String tokenizeParameters(String str) {
-        List<String> variableTokens = action.getVariableNames();
+        Set<String> variableTokens = action.getVariableNames();
         int tokenCounter = 0;
         for (String var : variableTokens) {
-            str = str.replaceAll(Pattern.quote("${" + var + "}"), Matcher.quoteReplacement("${" + (tokenCounter++) + "}"));
+            String varPattern = Pattern.quote("${") + var + "(\\|.*?)?" + Pattern.quote("}");
+            str = str.replaceAll(varPattern, Matcher.quoteReplacement("${" + (tokenCounter++) + "}"));
         }
         return str;
     }
 
     private String detokenizeParameters(String str) {
-        List<String> variableTokens = action.getVariableNames();
+        Set<String> variableTokens = action.getVariableNames();
         int tokenCounter = 0;
         for (String var : variableTokens) {
             str = str.replaceAll(Pattern.quote("${" + (tokenCounter++) + "}"), Matcher.quoteReplacement("${" + var + "}"));
@@ -220,7 +221,7 @@ public class ActionRunner implements Runnable {
     }
 
     private void applyVariables(Map<String, String> variables) {
-        List<String> variableTokens = action.getVariableNames();
+        Set<String> variableTokens = action.getVariableNames();
         variableTokens.forEach((String originalName) -> {
             String[] parts = originalName.split("\\|");
             String var = parts[0];
@@ -232,7 +233,7 @@ public class ActionRunner implements Runnable {
     }
 
     private void applyVariablesToMap(Map<String, String> variables, Map<String, String> target) {
-        List<String> variableTokens = action.getVariableNames();
+        Set<String> variableTokens = action.getVariableNames();
 
         Set removeSet = new HashSet<>();
         Map<String, String> newValues = new HashMap<>();
