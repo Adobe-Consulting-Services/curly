@@ -73,7 +73,7 @@ public class ActionGroupRunner implements TaskRunner {
             ActionResult response;
             try {
                 runner.run();
-                if (!runner.response.successfulProperty().get()) {
+                if (!runner.response.completelySuccessful().get()) {
                     handleError();
                 }
                 response = runner.response;
@@ -83,7 +83,7 @@ public class ActionGroupRunner implements TaskRunner {
                 response.setException(ex);
                 handleError();
             }
-            results.recordResult(action, response);
+            results.addDetail(response);
         });
     }
 

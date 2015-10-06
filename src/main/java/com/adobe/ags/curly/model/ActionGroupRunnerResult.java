@@ -17,102 +17,41 @@ package com.adobe.ags.curly.model;
 
 import com.adobe.ags.curly.CurlyApp;
 import static com.adobe.ags.curly.Messages.*;
-import com.sun.javafx.collections.ObservableListWrapper;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.StringBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 
-public class ActionGroupRunnerResult implements RunnerResult<ActionResult> {
+public class ActionGroupRunnerResult extends RunnerResult<ActionResult> {
 
     String task;
-    Map<Action, ActionResult> results;
-    DoubleProperty completionPercentage = new SimpleDoubleProperty(0);
-    BooleanProperty successfulProperty = new SimpleBooleanProperty(false);
-    ObservableList<ObservableValue> row;
 
     public ActionGroupRunnerResult(String taskName, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) {
         task = taskName;
-        results = new LinkedHashMap<>();
-        actions.forEach(action->results.put(action, null));
-        row = new ObservableListWrapper<>(new ArrayList<>());
         buildRow(variables, reportColumns);
     }
 
-    @Override
-    public BooleanProperty successfulProperty() {
-        return successfulProperty;
-    }
-
-    @Override
-    public DoubleProperty percentComplete() {
-        return completionPercentage;
-    }
-
-    @Override
-    public Collection<ActionResult> getDetails() {
-        return results.values();
-    }
-
-    public void recordResult(Action action, ActionResult response) {
-        // In case this affects the UI we should run this on the main JavaFX thread
-        Platform.runLater(() -> {
-            results.put(action, response);
-            DoubleProperty zero = new SimpleDoubleProperty(0);
-            DoubleBinding sum = Bindings.add(zero, 0d);
-            BooleanBinding allSuccessful = Bindings.and((new SimpleBooleanProperty(true)), (new SimpleBooleanProperty(true)));
-            for (ActionResult theResponse : results.values()) {
-                if (theResponse != null) {
-                    sum = sum.add(theResponse.percentComplete());
-                    allSuccessful = allSuccessful.and(theResponse.successfulProperty());
-                }
-            }
-            completionPercentage.bind(Bindings.divide(sum, results.size()));
-            successfulProperty.bind(allSuccessful);
-        });
-    }
-
-    @Override
-    public ObservableList<ObservableValue> reportRow() {
-        return row;
-    }
-
     private void buildRow(Map<String, String> variables, Set<String> reportColumns) {
-        StringBinding successOrNot = Bindings.when(successfulProperty)
+        StringBinding successOrNot = Bindings.when(completelySuccessful())
                 .then(CurlyApp.getMessage(COMPLETED_SUCCESSFUL))
                 .otherwise(CurlyApp.getMessage(COMPLETED_UNSUCCESSFUL));
-        row.add(new ReadOnlyStringWrapper(task));
-        row.add(Bindings.when(Bindings.greaterThanOrEqual(completionPercentage, 1)).then(successOrNot).otherwise(CurlyApp.getMessage(INCOMPLETE)));
-        row.add(Bindings.concat(Bindings.multiply(completionPercentage, 100), "%"));
-        reportColumns.forEach((colName) -> row.add(new SimpleStringProperty(variables.get(colName))));
+        reportRow().add(new ReadOnlyStringWrapper(task));
+        reportRow().add(Bindings.when(Bindings.greaterThanOrEqual(percentComplete(), 1)).then(successOrNot).otherwise(CurlyApp.getMessage(INCOMPLETE)));
+        reportRow().add(Bindings.concat(Bindings.multiply(percentComplete(), 100), "%"));
+        reportColumns.forEach((colName) -> reportRow().add(new SimpleStringProperty(variables.get(colName))));
     }
     
     @Override
     public String toHtml(int level) {
         StringBuilder sb = new StringBuilder();
         sb.append("<tr>");
-        row.forEach(value->sb.append("<td>").append(value.getValue().toString()).append("</td>"));
+        reportRow().forEach(value->sb.append("<td>").append(value.getValue().toString()).append("</td>"));
         sb.append("</tr>");
         if (level > 1) {
-            if (results != null) {
-                results.values().stream().filter(f->f!=null).forEach(result->sb.append(result.toHtml(level)));
-            }
+            getDetails().forEach(result->sb.append(result.toHtml(level)));
         }
         return sb.toString();
     }

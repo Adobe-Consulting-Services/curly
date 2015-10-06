@@ -15,16 +15,66 @@
  */
 package com.adobe.ags.curly.model;
 
-import java.util.Collection;
+import com.sun.javafx.collections.ObservableListWrapper;
+import java.util.ArrayList;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ReadOnlyListProperty;
+import javafx.beans.property.ReadOnlyListWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 
-public interface RunnerResult<T extends RunnerResult> {
-    public BooleanProperty successfulProperty();
-    public DoubleProperty percentComplete();
-    public ObservableList<ObservableValue> reportRow();
-    public Collection<T> getDetails();
-    public String toHtml(int level);
+public abstract class RunnerResult<T extends RunnerResult> {
+    final private DoubleProperty percentSuccess = new SimpleDoubleProperty(0);
+    final private DoubleProperty percentComplete = new SimpleDoubleProperty(0);
+    final private BooleanProperty started = new SimpleBooleanProperty(false);
+    final private ObservableList<ObservableValue> reportRow = new ObservableListWrapper<>(new ArrayList<>());
+    final private ObservableList<T> details = new ObservableListWrapper<>(new ArrayList<>());
+    
+    public DoubleProperty percentSuccess() {
+        return percentSuccess;
+    };
+    public DoubleProperty percentComplete() {
+        return percentComplete;
+    }
+    public BooleanProperty started() {
+        return started;
+    }
+    public BooleanBinding completed() {
+        return Bindings.greaterThanOrEqual(percentComplete(), 1.0);
+    }
+    public BooleanBinding completelySuccessful() {
+        return Bindings.greaterThanOrEqual(percentSuccess(), 1.0);
+    }
+    public ObservableList<ObservableValue> reportRow() {
+        return reportRow;
+    }
+    public ReadOnlyListProperty<T> getDetails() {
+        return new ReadOnlyListWrapper<T>(details);
+    }
+    public void addDetail(T detail) {
+        details.add(detail);
+        Platform.runLater(()->trackSummaryAgainstAttionalDetail(detail));
+    }
+    
+    private DoubleBinding completionSummary;
+    private DoubleBinding successSummary;
+    private void trackSummaryAgainstAttionalDetail(T detail) {
+        if (details.size() == 1) {
+            completionSummary = detail.percentComplete().add(0);
+            successSummary = detail.percentSuccess().add(0);
+        } else {
+            completionSummary = completionSummary.add(detail.percentComplete());
+            successSummary = successSummary.add(detail.percentSuccess());
+        }
+        percentComplete.bind(completionSummary.divide(details.size()));
+        percentSuccess.bind(successSummary.divide(details.size()));
+    }
+    abstract public String toHtml(int level);
 }

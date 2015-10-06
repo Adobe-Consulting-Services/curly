@@ -63,8 +63,8 @@ public class BatchRunner implements TaskRunner {
             executor = new ThreadPoolExecutor(concurrency, concurrency, 1, TimeUnit.DAYS, tasks);
             result.start();
             executor.execute(()->{
-                result.successfulProperty().unbind();
-                result.successfulProperty().set(true);
+//                result.successfulProperty().unbind();
+//                result.successfulProperty().set(true);
                 result.stop();
             });
             executor.awaitTermination(1, TimeUnit.DAYS);
@@ -73,8 +73,8 @@ public class BatchRunner implements TaskRunner {
             if (!executor.isShutdown()) {
                 executor.getQueue().clear();
             }
-            result.successfulProperty().unbind();
-            result.successfulProperty().set(false);
+//            result.successfulProperty().unbind();
+//            result.successfulProperty().set(false);
         }
         result.stop();
     }
@@ -91,7 +91,7 @@ public class BatchRunner implements TaskRunner {
                     }
                 });
                 ActionGroupRunner runner = new ActionGroupRunner("Row "+row,clientThread::get, actions, values, displayColumns);
-                result.getDetails().add(runner.results);
+                result.addDetail(runner.results);
                 tasks.add(runner);
             } catch (ParseException ex) {
                 Logger.getLogger(BatchRunner.class.getName()).log(Level.SEVERE, null, ex);
