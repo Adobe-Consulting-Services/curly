@@ -15,6 +15,7 @@
  */
 package com.adobe.ags.curly.controller;
 
+import com.adobe.ags.curly.ConnectionManager;
 import com.adobe.ags.curly.CurlyApp;
 import static com.adobe.ags.curly.Messages.NO_DATA_LOADED;
 import com.adobe.ags.curly.model.Action;
@@ -25,9 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -90,7 +89,7 @@ public class AppController {
 
     @FXML // fx:id="batchDataTable"
     private TableView<Map<String, String>> batchDataTable;
-    
+
     @FXML // fx:id="concurencyChoice"
     private ChoiceBox<Integer> concurencyChoice; // Value injected by FXMLLoader
 
@@ -99,8 +98,8 @@ public class AppController {
 
     public ObservableList<Action> getActions() {
         return actionList.getItems();
-    }    
-    
+    }
+
     @FXML
     void addActionClicked(ActionEvent event) {
         Action action = CurlyApp.getInstance().editAction(new Action(), null);
@@ -113,22 +112,22 @@ public class AppController {
     void removeSelectedActionClicked(ActionEvent event) {
         actionList.getItems().removeAll(actionList.getSelectionModel().getSelectedItems());
     }
-    
+
     @FXML
     void ignoreErrors(ActionEvent event) {
         CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.IGNORE);
     }
-    
+
     @FXML
     void skipIfError(ActionEvent event) {
         CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.SKIP);
     }
-    
+
     @FXML
     void haltIfError(ActionEvent event) {
         CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.HALT);
     }
-    
+
     @FXML
     void openDataSet(ActionEvent event) {
         CurlyApp.getInstance().importWizard(this::loadData);
@@ -136,10 +135,10 @@ public class AppController {
 
     @FXML
     void singleShotClicked(ActionEvent event) {
-        List<Map<String,String>> blankRow = new ArrayList<>();
+        List<Map<String, String>> blankRow = new ArrayList<>();
         blankRow.add(new HashMap<>());
         BatchRunner runner = new BatchRunner(loginHandler, concurencyChoice.getValue(), getActions(), blankRow, defaults, defaults.keySet());
-        CurlyApp.getInstance().openActivityMonitor(runner);        
+        CurlyApp.getInstance().openActivityMonitor(runner);
     }
 
     @FXML
@@ -147,7 +146,7 @@ public class AppController {
         BatchRunner runner = new BatchRunner(loginHandler, concurencyChoice.getValue(), getActions(), batchDataTable.getItems(), defaults, defaults.keySet());
         CurlyApp.getInstance().openActivityMonitor(runner);
     }
-    
+
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         assert connectionTab != null : "fx:id=\"connectionTab\" was not injected: check your FXML file 'App.fxml'.";
@@ -176,11 +175,13 @@ public class AppController {
         actionList.getItems().addListener(this::buildVariableGrid);
 
         defaults = new TreeMap<>();
-        
-        List<Integer> oneThroughNine = IntStream.range(1,10).boxed().collect(Collectors.toList());
+
+        List<Integer> oneThroughNine = IntStream.range(1, 10).boxed().collect(Collectors.toList());
         concurencyChoice.setItems(new ObservableListWrapper<>(oneThroughNine));
-        Platform.runLater(()->concurencyChoice.getSelectionModel().selectFirst());
-        
+        concurencyChoice.selectionModelProperty().addListener((prop, oldValue, newValue)
+                -> ConnectionManager.getInstance().setPoolSize(newValue.getSelectedItem()));
+        Platform.runLater(() -> concurencyChoice.getSelectionModel().selectFirst());
+
         batchDataTable.setPlaceholder(new Label(CurlyApp.getMessage(NO_DATA_LOADED)));
     }
 
@@ -195,7 +196,7 @@ public class AppController {
 
         oneShotGrid.getChildren().clear();
         final AtomicInteger row = new AtomicInteger(0);
-        variablesWithDefaults.forEach((var,defaultValue) -> {
+        variablesWithDefaults.forEach((var, defaultValue) -> {
             if (var.equalsIgnoreCase("server")) {
                 return;
             }
@@ -208,21 +209,21 @@ public class AppController {
             oneShotGrid.add(text, 1, row.getAndIncrement());
         });
     }
-    
+
     private void loadData(List<Map<String, String>> data) {
         batchDataTable.getColumns().clear();
-        
-        TableColumn<Map<String,String>, String> numberCol = new TableColumn("");
-        numberCol.setCellValueFactory(row->new ReadOnlyObjectWrapper(
-                (row.getTableView().getItems().indexOf(row.getValue())+1) + ""));
+
+        TableColumn<Map<String, String>, String> numberCol = new TableColumn("");
+        numberCol.setCellValueFactory(row -> new ReadOnlyObjectWrapper(
+                (row.getTableView().getItems().indexOf(row.getValue()) + 1) + ""));
         batchDataTable.getColumns().add(numberCol);
-        
-        data.get(0).keySet().forEach(varName->{
-            TableColumn<Map<String,String>, String> varCol = new TableColumn(varName);
-            varCol.setCellValueFactory(row->new ReadOnlyObjectWrapper(row.getValue().get(varName)));
+
+        data.get(0).keySet().forEach(varName -> {
+            TableColumn<Map<String, String>, String> varCol = new TableColumn(varName);
+            varCol.setCellValueFactory(row -> new ReadOnlyObjectWrapper(row.getValue().get(varName)));
             batchDataTable.getColumns().add(varCol);
         });
-        
+
         batchDataTable.setItems(new ObservableListWrapper<>(data));
     }
 }

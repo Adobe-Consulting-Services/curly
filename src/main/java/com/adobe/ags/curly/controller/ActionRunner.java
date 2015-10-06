@@ -48,6 +48,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 public class ActionRunner implements Runnable {
 
@@ -108,6 +109,7 @@ public class ActionRunner implements Runnable {
             addHeaders(request);
             CloseableHttpResponse httpResponse = client.get().execute(request);
             response.processHttpResponse(httpResponse, action.getResultType());
+            EntityUtils.consume(httpResponse.getEntity());
         } catch (IOException ex) {
             Logger.getLogger(ActionRunner.class.getName()).log(Level.SEVERE, null, ex);
             response.setException(ex);

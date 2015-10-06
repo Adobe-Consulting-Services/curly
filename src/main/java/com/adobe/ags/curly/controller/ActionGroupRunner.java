@@ -21,6 +21,7 @@ import com.adobe.ags.curly.model.ActionResult;
 import com.adobe.ags.curly.model.ActionGroupRunnerResult;
 import com.adobe.ags.curly.model.RunnerResult;
 import com.adobe.ags.curly.model.TaskRunner;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,13 +40,15 @@ public class ActionGroupRunner implements TaskRunner {
     Map<String, String> vars;
     BooleanProperty skipTheRest = new SimpleBooleanProperty(false);
     ActionGroupRunnerResult results;
+    Supplier<CloseableHttpClient> clientSupplier;
 
-    public ActionGroupRunner(String taskName, Supplier<CloseableHttpClient> client, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) throws ParseException {
+    public ActionGroupRunner(String taskName, Supplier<CloseableHttpClient> clientSupplier, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) throws ParseException {
         this.actions = new LinkedHashMap<>();
+        this.clientSupplier = clientSupplier;
         actions.forEach((action)->{
             ActionRunner runner = null;
             try {
-                runner = new ActionRunner(client, action, variables);
+                runner = new ActionRunner(this::getClient, action, variables);
                 this.actions.put(action, runner);
             } catch (ParseException ex) {
                 Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
@@ -58,6 +61,14 @@ public class ActionGroupRunner implements TaskRunner {
         results = new ActionGroupRunnerResult(taskName, actions, variables, reportColumns);
     }
 
+    CloseableHttpClient client;
+    private CloseableHttpClient getClient() {
+        if (client == null) {
+            client = clientSupplier.get();
+        }
+        return client;
+    }
+    
     @Override
     public RunnerResult getResult() {
         return results;
@@ -85,6 +96,11 @@ public class ActionGroupRunner implements TaskRunner {
             }
             results.addDetail(response);
         });
+        try {
+            client.close();
+        } catch (IOException ex) {
+            Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void handleError() {

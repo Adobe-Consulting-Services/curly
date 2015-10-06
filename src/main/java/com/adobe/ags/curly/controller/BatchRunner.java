@@ -41,6 +41,7 @@ public class BatchRunner implements TaskRunner {
     ThreadPoolExecutor executor;
     int concurrency;
     ThreadLocal<CloseableHttpClient> clientThread;
+    Runnable buildWorkerPool;
 
     public BatchRunner(AuthHandler auth, int concurrency, List<Action> actions, List<Map<String, String>> batchData, Map<String, StringProperty> defaultValues, Set<String> displayColumns) {
         clientThread = ThreadLocal.withInitial(auth::getAuthenticatedClient);
@@ -48,7 +49,7 @@ public class BatchRunner implements TaskRunner {
         tasks = new ArrayBlockingQueue<>(batchData.size());
         this.concurrency = concurrency;
         defaultValues.put("server", new ReadOnlyStringWrapper(auth.getUrlBase()));
-        buildTasks(actions, batchData, defaultValues, displayColumns);
+        buildWorkerPool = ()->buildTasks(actions, batchData, defaultValues, displayColumns);
     }
     
     @Override
@@ -61,11 +62,13 @@ public class BatchRunner implements TaskRunner {
         try {
             CurlyApp.getInstance().runningProperty().set(true);
             executor = new ThreadPoolExecutor(concurrency, concurrency, 1, TimeUnit.DAYS, tasks);
+            executor.allowCoreThreadTimeOut(true);
             result.start();
-            executor.execute(()->{
-                result.stop();
-            });
+            buildWorkerPool.run();
+            executor.execute(()->result.stop());
+            executor.shutdown();
             executor.awaitTermination(1, TimeUnit.DAYS);
+            result.stop();
         } catch (InterruptedException ex) {
             Logger.getLogger(BatchRunner.class.getName()).log(Level.SEVERE, null, ex);
             if (!executor.isShutdown()) {
@@ -88,7 +91,7 @@ public class BatchRunner implements TaskRunner {
                 });
                 ActionGroupRunner runner = new ActionGroupRunner("Row "+row,clientThread::get, actions, values, displayColumns);
                 result.addDetail(runner.results);
-                tasks.add(runner);
+                executor.execute(runner);
             } catch (ParseException ex) {
                 Logger.getLogger(BatchRunner.class.getName()).log(Level.SEVERE, null, ex);
             }
