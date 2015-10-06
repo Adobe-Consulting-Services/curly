@@ -40,60 +40,64 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.stage.Modality;
 import static javafx.application.Application.launch;
+import javafx.application.Platform;
 
 public class CurlyApp extends Application {
-    public static enum ErrorBehavior {IGNORE,SKIP,HALT};
+
+    public static enum ErrorBehavior {
+        IGNORE, SKIP, HALT
+    };
     static CurlyApp singleton;
     static final String APPLICATION_TITLE = "applicationTitle";
     private AppController appController;
     private final BooleanProperty isRunning = new SimpleBooleanProperty(false);
     private final ObjectProperty<ErrorBehavior> errorBehavior = new SimpleObjectProperty<>(ErrorBehavior.IGNORE);
     private ResourceBundle i18n;
-    
+
     public static CurlyApp getInstance() {
         return singleton;
     }
-    
+
     private Stage applicationWindow;
-    
+
     public BooleanProperty runningProperty() {
         return isRunning;
     }
-    
+
     public ObjectProperty<ErrorBehavior> errorBehaviorProperty() {
         return errorBehavior;
     }
-    
+
     public static String getMessage(String key) {
         return singleton.i18n.getString(key);
     }
-    
+
     public Action editAction(Action source, Runnable persistHandler) {
         final BooleanProperty okPressed = new SimpleBooleanProperty(false);
         if (source == null) {
             source = new Action();
         }
-        
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ActionPanel.fxml"));
             loader.setResources(i18n);
             loader.load();
             ActionPanelController actionController = loader.getController();
-            
+
             Stage popup = new Stage();
             popup.setScene(new Scene(loader.getRoot()));
             popup.initModality(Modality.APPLICATION_MODAL);
             popup.initOwner(applicationWindow);
-                        
+
             actionController.populateValues(source, true);
-            actionController.onPersist(()->{
+            actionController.onPersist(() -> {
                 if (persistHandler != null) {
                     persistHandler.run();
                 }
                 okPressed.set(true);
             });
             actionController.whenFinished(popup::close);
-            
+
             popup.showAndWait();
         } catch (IOException ex) {
             Logger.getLogger(CurlyApp.class.getName()).log(Level.SEVERE, null, ex);
@@ -111,42 +115,42 @@ public class CurlyApp extends Application {
             loader.setResources(i18n);
             loader.load();
             DataImporterController importController = loader.getController();
-            
+
             Stage popup = new Stage();
             popup.setScene(new Scene(loader.getRoot()));
             popup.initModality(Modality.APPLICATION_MODAL);
             popup.initOwner(applicationWindow);
-                        
+
             importController.setActions(appController.getActions());
             importController.setFinishImportHandler(handler);
             importController.whenFinished(popup::close);
-            
+
             popup.showAndWait();
         } catch (IOException ex) {
             Logger.getLogger(CurlyApp.class.getName()).log(Level.SEVERE, null, ex);
-        }        
+        }
     }
-    
+
     public void openActivityMonitor(BatchRunner runner) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RunnerReport.fxml"));
             loader.setResources(i18n);
             loader.load();
             RunnerActivityController runnerActivityController = loader.getController();
-            
+
             Stage popup = new Stage();
             popup.setScene(new Scene(loader.getRoot()));
             popup.initModality(Modality.APPLICATION_MODAL);
             popup.initOwner(applicationWindow);
-                        
+
             runnerActivityController.attachRunner(runner);
-            
+
             popup.showAndWait();
         } catch (IOException ex) {
             Logger.getLogger(CurlyApp.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }    
-    
+    }
+
     @Override
     public void start(Stage stage) throws Exception {
         singleton = this;
@@ -158,13 +162,19 @@ public class CurlyApp extends Application {
         loader.load();
         Parent root = loader.getRoot();
         appController = loader.getController();
-        
+
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
-        
+
         stage.setTitle(i18n.getString(APPLICATION_TITLE));
         stage.setScene(scene);
         stage.show();
+
+        stage.setOnCloseRequest(event -> {
+            ConnectionManager.getInstance().shutdown();
+            Platform.exit();
+            System.exit(0);
+        });
     }
 
     /**

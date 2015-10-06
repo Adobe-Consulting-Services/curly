@@ -15,7 +15,6 @@
  */
 package com.adobe.ags.curly;
 
-import java.util.concurrent.TimeUnit;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -42,6 +41,13 @@ public class ConnectionManager {
         connectionManager.setMaxTotal(size);
     }
     
+    public void shutdown() {
+        if (connectionManager != null) {
+            connectionManager.close();
+            connectionManager.shutdown();
+        }
+    }
+    
     public CloseableHttpClient getAuthenticatedClient(CredentialsProvider creds) {
         CloseableHttpClient httpclient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
@@ -51,5 +57,4 @@ public class ConnectionManager {
                 .build();
         return httpclient;
     }
-    
 }
