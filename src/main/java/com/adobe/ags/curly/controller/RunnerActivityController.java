@@ -99,6 +99,7 @@ public class RunnerActivityController {
                     )
                     .otherwise(CurlyApp.getMessage(INCOMPLETE)));
             goStopButton.setText(CurlyApp.getMessage(STOP));
+            goStopButton.visibleProperty().bind(Bindings.not(currentTask.getResult().completed()));
         } else {
             CurlyApp.getInstance().runningProperty().set(false);
             goStopButton.disableProperty();
