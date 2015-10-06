@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -39,11 +40,13 @@ import javafx.scene.web.WebView;
 import javafx.util.StringConverter;
 
 public class RunnerActivityController {
+
     public static final int REPORT_GENERATION_INTERVAL = 5;
-    
+
     public static enum ReportStyle {
         BRIEF(0), DETAILED(1), FULL(2);
         public int level;
+
         ReportStyle(int lvl) {
             level = lvl;
         }
@@ -71,12 +74,21 @@ public class RunnerActivityController {
     private WebView reportWebview; // Value injected by FXMLLoader
 
     Thread runnerThread = null;
+
     @FXML
     void goStopClicked(ActionEvent event) {
         if (runnerThread == null) {
             runnerThread = new Thread(currentTask::run);
             runnerThread.start();
             hookupReportGenerator();
+            statusLabel.textProperty().bind(Bindings
+                    .when(currentTask.getResult().completed())
+                    .then(
+                            Bindings.when(currentTask.getResult().completelySuccessful())
+                            .then(CurlyApp.getMessage(COMPLETED_SUCCESSFUL))
+                            .otherwise(CurlyApp.getMessage(COMPLETED_UNSUCCESSFUL))
+                    )
+                    .otherwise(CurlyApp.getMessage(INCOMPLETE)));
             goStopButton.setText(CurlyApp.getMessage(STOP));
         } else {
             CurlyApp.getInstance().runningProperty().set(false);
@@ -126,7 +138,7 @@ public class RunnerActivityController {
             }
         });
         Platform.runLater(() -> reportStyle.getSelectionModel().selectFirst());
-        reportStyle.selectionModelProperty().addListener((prop,oldVal,newVal)->generateReport());
+        reportStyle.selectionModelProperty().addListener((prop, oldVal, newVal) -> generateReport());
     }
 
     TaskRunner currentTask;
@@ -152,27 +164,28 @@ public class RunnerActivityController {
         final long sec = TimeUnit.MILLISECONDS.toSeconds(interval - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
         return String.format("%02d:%02d:%02d", hr, min, sec);
     }
-    
+
     ScheduledExecutorService reportGenerator;
     ScheduledFuture reportTask;
+
     private void hookupReportGenerator() {
         reportGenerator = new ScheduledThreadPoolExecutor(1);
         reportTask = reportGenerator.scheduleWithFixedDelay(this::generateReport, 1, REPORT_GENERATION_INTERVAL, TimeUnit.SECONDS);
     }
-    
+
     private void disableReportGenerator() {
         if (reportGenerator != null) {
             reportTask.cancel(false);
             reportGenerator.shutdown();
             reportGenerator = null;
         }
-    }    
-    
+    }
+
     private void generateReport() {
         try {
             if (results != null) {
                 String html = results.toHtml(reportStyle.getSelectionModel().getSelectedItem().level);
-                Platform.runLater(()->reportWebview.getEngine().loadContent(html));
+                Platform.runLater(() -> reportWebview.getEngine().loadContent(html));
             }
         } catch (Throwable t) {
             Logger.getLogger(RunnerActivityController.class.getName()).log(Level.SEVERE, null, t);

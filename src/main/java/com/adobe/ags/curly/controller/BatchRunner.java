@@ -63,8 +63,6 @@ public class BatchRunner implements TaskRunner {
             executor = new ThreadPoolExecutor(concurrency, concurrency, 1, TimeUnit.DAYS, tasks);
             result.start();
             executor.execute(()->{
-//                result.successfulProperty().unbind();
-//                result.successfulProperty().set(true);
                 result.stop();
             });
             executor.awaitTermination(1, TimeUnit.DAYS);
@@ -73,8 +71,6 @@ public class BatchRunner implements TaskRunner {
             if (!executor.isShutdown()) {
                 executor.getQueue().clear();
             }
-//            result.successfulProperty().unbind();
-//            result.successfulProperty().set(false);
         }
         result.stop();
     }
