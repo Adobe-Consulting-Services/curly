@@ -31,50 +31,64 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 
 public abstract class RunnerResult<T extends RunnerResult> {
+
     final private DoubleProperty percentSuccess = new SimpleDoubleProperty(0);
     final private DoubleProperty percentComplete = new SimpleDoubleProperty(0);
     final private BooleanProperty started = new SimpleBooleanProperty(false);
     final private ObservableList<ObservableValue> reportRow = new ObservableListWrapper<>(new ArrayList<>());
     final private ObservableList<T> details = new ObservableListWrapper<>(new ArrayList<>());
-    
+
     public DoubleProperty percentSuccess() {
         return percentSuccess;
-    };
+    }
+
+    ;
     public DoubleProperty percentComplete() {
         return percentComplete;
     }
+
     public BooleanProperty started() {
         return started;
     }
+
     public BooleanBinding completed() {
         return Bindings.greaterThanOrEqual(percentComplete(), 1.0);
     }
+
     public BooleanBinding completelySuccessful() {
         return Bindings.greaterThanOrEqual(percentSuccess(), 1.0);
     }
+
     public ObservableList<ObservableValue> reportRow() {
         return reportRow;
     }
+
     public ReadOnlyListProperty<T> getDetails() {
-        return new ReadOnlyListWrapper<T>(details);
+        return new ReadOnlyListWrapper<>(details);
     }
+
     public void addDetail(T detail) {
         details.add(detail);
-        Platform.runLater(()->trackSummaryAgainstAttionalDetail(detail));
+        Platform.runLater(() -> trackSummaryAgainstAttionalDetail(detail));
     }
-    
+
     private DoubleBinding completionSummary;
     private DoubleBinding successSummary;
+
     private void trackSummaryAgainstAttionalDetail(T detail) {
-        if (details.size() == 1) {
+        if (completionSummary == null) {
             completionSummary = detail.percentComplete().add(0);
-            successSummary = detail.percentSuccess().add(0);
         } else {
             completionSummary = completionSummary.add(detail.percentComplete());
+        }
+        if (successSummary == null) {
+            successSummary = detail.percentSuccess().add(0);
+        } else {
             successSummary = successSummary.add(detail.percentSuccess());
         }
         percentComplete.bind(completionSummary.divide(details.size()));
         percentSuccess.bind(successSummary.divide(details.size()));
     }
+
     abstract public String toHtml(int level);
 }
