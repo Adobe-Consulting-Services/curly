@@ -40,7 +40,7 @@ public class ActionGroupRunnerResult extends RunnerResult<ActionResult> {
                 .otherwise(CurlyApp.getMessage(COMPLETED_UNSUCCESSFUL));
         reportRow().add(new ReadOnlyStringWrapper(task));
         reportRow().add(Bindings.when(Bindings.greaterThanOrEqual(percentComplete(), 1)).then(successOrNot).otherwise(CurlyApp.getMessage(INCOMPLETE)));
-        reportRow().add(Bindings.concat(Bindings.multiply(percentComplete(), 100), "%"));
+        reportRow().add(Bindings.concat(Bindings.multiply(percentComplete(), 100).intValue(), "%"));
         reportColumns.forEach((colName) -> reportRow().add(new SimpleStringProperty(variables.get(colName))));
     }
     

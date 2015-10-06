@@ -39,7 +39,7 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
         reportRow().add(Bindings.when(completed())
                 .then(successOrNot).otherwise(CurlyApp.getMessage(INCOMPLETE)));
 
-        reportRow().add(Bindings.concat(Bindings.multiply(percentComplete(), 100), "%"));
+        reportRow().add(Bindings.concat(Bindings.multiply(percentComplete(), 100).intValue(), "%"));
     }
 
     public void start() {
