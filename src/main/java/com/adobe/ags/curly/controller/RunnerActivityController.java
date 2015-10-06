@@ -21,7 +21,13 @@ import com.adobe.ags.curly.model.BatchRunnerResult;
 import com.adobe.ags.curly.model.RunnerResult;
 import com.adobe.ags.curly.model.TaskRunner;
 import com.sun.javafx.collections.ObservableListWrapper;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -36,7 +42,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.DataFormat;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
 public class RunnerActivityController {
@@ -107,12 +116,24 @@ public class RunnerActivityController {
 
     @FXML
     void copyClicked(ActionEvent event) {
-
+        Map<DataFormat, Object> reportFormats = new HashMap<>();
+        reportFormats.put(DataFormat.HTML, getReportHtml());
+        Clipboard.getSystemClipboard().setContent(reportFormats);
     }
 
     @FXML
     void saveClicked(ActionEvent event) {
+        FileChooser saveChooser = new FileChooser();
+        File saveFile = saveChooser.showSaveDialog(null);
+        if (saveFile != null) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(saveFile))) {
+                writer.write(getReportHtml());
+                writer.close();
+            } catch (IOException ex) {
+                Logger.getLogger(RunnerActivityController.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
+        }
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -181,10 +202,14 @@ public class RunnerActivityController {
         }
     }
 
+    private String getReportHtml() {
+        return results.toHtml(reportStyle.getSelectionModel().getSelectedItem().level);
+    }
+
     private void generateReport() {
         try {
             if (results != null) {
-                String html = results.toHtml(reportStyle.getSelectionModel().getSelectedItem().level);
+                String html = getReportHtml();
                 Platform.runLater(() -> reportWebview.getEngine().loadContent(html));
             }
         } catch (Throwable t) {
