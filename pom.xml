@@ -11,7 +11,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mainClass>com.adobe.ags.curly.curly.MainApp</mainClass>
+        <mainClass>com.adobe.ags.curly.curly.CurlyApp</mainClass>
         <netbeans.hint.license>apache20</netbeans.hint.license>
     </properties>
 
@@ -27,7 +27,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>8.1.2</version>
                 <configuration>Curly
-                    <mainClass>com.adobe.ags.curly.MainApp</mainClass>
+                    <mainClass>com.adobe.ags.curly.CurlyApp</mainClass>
                     <!-- only required if signing the jar file -->
                     <keyStoreAlias>example-user</keyStoreAlias>
                     <keyStorePassword>example-password</keyStorePassword>
