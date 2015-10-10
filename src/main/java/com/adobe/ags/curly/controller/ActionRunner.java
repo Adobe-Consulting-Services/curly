@@ -186,11 +186,14 @@ public class ActionRunner implements Runnable {
         switch (command) {
             case 'F':
                 httpMethod = HttpMethod.POST;
-                String[] nvp = param.split("=");
-                if (nvp.length != 2) {
-                    throw new ParseException(CurlyApp.getMessage(MISSING_NVP_FORM_ERROR), offset + 1);
+                int equals = param.indexOf('=');
+                if (equals > -1) {
+                    String fieldName = detokenizeParameters(param.substring(0, equals));
+                    String value = equals < param.length()-1 ? detokenizeParameters(param.substring(equals+1)) : null;
+                    postVariables.put(fieldName, value);
+                } else {
+                    throw new ParseException(CurlyApp.getMessage(MISSING_NVP_FORM_ERROR), offset + 1);                    
                 }
-                postVariables.put(detokenizeParameters(nvp[0]), detokenizeParameters(nvp[1]));
                 return true;
             case 'X':
                 try {
@@ -200,7 +203,7 @@ public class ActionRunner implements Runnable {
                 }
                 return true;
             case 'h':
-                nvp = param.split(":\\s*");
+                String[] nvp = param.split(":\\s*");
                 if (nvp.length != 2) {
                     throw new ParseException(CurlyApp.getMessage(MISSING_NVP_HEADER_ERROR), offset + 1);
                 }
