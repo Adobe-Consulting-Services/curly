@@ -131,6 +131,12 @@
         "command": "-FremoveMembers=${user name} ${server}/home/groups${group path|/t/testGroup}.rw.html"
     },
     {
+        "name": "Change an existing user's password",
+        "description": "This will change a AEM user's password, assuming you are logged in with an administrator with this capability.  Don't use this to reset admin password, as that is a different process which should be done manually.",
+        "command": "-F:currentPassword=${admin password|admin} -Frep:password=${new password|changeme} -F_charset_=utf-8 ${server}${user path|/home/users/s/some-user}.rw.userprops.html",
+        "type": "html"
+    },
+    {
         "name": "Set user's groups memberships",
         "description": "This removes a user from any groups they might be in that are not part of the provided groups.",
         "command": "-Fmembership=${group 1|contributor} -Fmembership=${group 2|othergroup} ${server}/home/users/${user path|/u/user}.rw.html"
