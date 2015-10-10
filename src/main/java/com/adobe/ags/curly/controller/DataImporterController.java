@@ -25,13 +25,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Consumer;
@@ -62,12 +60,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class DataImporterController {
     public static final String DONT_USE = "";
-
-    @FXML // ResourceBundle that was given to the FXMLLoader
-    private ResourceBundle resources;
-
-    @FXML // URL location of the FXML file that was given to the FXMLLoader
-    private URL location;
 
     @FXML // fx:id="currentFileName"
     private TextField currentFileName; // Value injected by FXMLLoader

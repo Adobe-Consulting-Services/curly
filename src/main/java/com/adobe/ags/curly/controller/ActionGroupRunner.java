@@ -17,8 +17,8 @@ package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.CurlyApp;
 import com.adobe.ags.curly.model.Action;
-import com.adobe.ags.curly.model.ActionResult;
 import com.adobe.ags.curly.model.ActionGroupRunnerResult;
+import com.adobe.ags.curly.model.ActionResult;
 import com.adobe.ags.curly.model.RunnerResult;
 import com.adobe.ags.curly.model.TaskRunner;
 import java.io.IOException;
