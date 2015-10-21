@@ -171,8 +171,8 @@ public class RunnerActivityController {
         results = runner.getResult();
         if (results instanceof BatchRunnerResult) {
             BatchRunnerResult batchResults = (BatchRunnerResult) results;
-            batchResults.timeEllapsedProperty().addListener((observable, oldValue, newValue) -> ellapsedLabel.setText(timeString(newValue.longValue())));
-            batchResults.timeRemainingProperty().addListener((observable, oldValue, newValue) -> remainingLabel.setText(timeString(newValue.longValue())));
+            batchResults.timeEllapsedProperty().addListener((observable, oldValue, newValue) -> Platform.runLater(()->ellapsedLabel.setText(timeString(newValue.longValue()))));
+            batchResults.timeRemainingProperty().addListener((observable, oldValue, newValue) -> Platform.runLater(()->remainingLabel.setText(timeString(newValue.longValue()))));
         } else {
             ellapsedLabel.setText("???");
             remainingLabel.setText("???");
