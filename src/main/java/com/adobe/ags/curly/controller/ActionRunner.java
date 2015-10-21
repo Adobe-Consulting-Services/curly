@@ -59,7 +59,7 @@ public class ActionRunner implements Runnable {
     Map<String, String> requestHeaders = new LinkedTreeMap<>();
     Action action;
     String URL;
-    HttpMethod httpMethod;
+    HttpMethod httpMethod = HttpMethod.GET;
     ActionResult response;
     Supplier<CloseableHttpClient> client;
 
