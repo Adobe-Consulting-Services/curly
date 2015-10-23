@@ -60,6 +60,12 @@
         "type":"html"
     },
     {
+        "name": "Verify node exists",
+        "description": "If node exists, the test passes.  If not, the test fails",
+        "command": "${server}${node path}.json",
+        "type":"json"        
+    },
+    {
         "name": "Lock a page",
         "description": "",
         "command": "-F cmd=lockPage -F path=${page path|/content/path/to/page} -F _charset_=utf-8 ${server}/bin/wcmcommand"
@@ -103,6 +109,12 @@
         "name": "Deactivate tree",
         "description": "Warning: This is a recursive operation and performing this on large secions of the respository should only be done with caution!",
         "command": "-F cmd=deactivate -F onlymodified=${only modified|true} -F path=${node path} ${server}/etc/replication/treeactivation.json",
+        "type":"json"
+    },
+    {
+        "name": "Start a workflow",
+        "description": "Create a new running workflow instance with a specific payload",
+        "command": "-F model=/etc/workflow/models/${workflow model|dam/update_asset}/jcr:content/model -F payload=${node path} -F payloadType=JCR_PATH -F workflowTitle=${workflow title|Curly-started workflow} ${server}/etc/workflow/instances",
         "type":"json"
     },
     {
