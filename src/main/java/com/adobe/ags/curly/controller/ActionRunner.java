@@ -55,7 +55,7 @@ public class ActionRunner implements Runnable {
     public static enum HttpMethod {
         GET, POST, DELETE, HEAD, PUT, TRACE, CONNECT, OPTIONS
     };
-    Map<String, String> postVariables = new LinkedTreeMap<>();
+    Map<String, List<String>> postVariables = new LinkedTreeMap<>();
     Map<String, String> requestHeaders = new LinkedTreeMap<>();
     Action action;
     String URL;
@@ -124,7 +124,7 @@ public class ActionRunner implements Runnable {
 
     private void addPostParams(HttpEntityEnclosingRequestBase request) throws UnsupportedEncodingException {
         List<NameValuePair> formParams = new ArrayList<>();
-        postVariables.forEach((name, value) -> formParams.add(new BasicNameValuePair(name, value)));
+        postVariables.forEach((name, values) -> values.forEach(value->formParams.add(new BasicNameValuePair(name, value))));
         request.setEntity(new UrlEncodedFormEntity(formParams));
     }
 
@@ -190,7 +190,10 @@ public class ActionRunner implements Runnable {
                 if (equals > -1) {
                     String fieldName = detokenizeParameters(param.substring(0, equals));
                     String value = equals < param.length()-1 ? detokenizeParameters(param.substring(equals+1)) : null;
-                    postVariables.put(fieldName, value);
+                    if (!postVariables.containsKey(fieldName)) {
+                        postVariables.put(fieldName, new ArrayList<>());
+                    }
+                    postVariables.get(fieldName).add(value);
                 } else {
                     throw new ParseException(CurlyApp.getMessage(MISSING_NVP_FORM_ERROR), offset + 1);                    
                 }
@@ -233,7 +236,7 @@ public class ActionRunner implements Runnable {
             String replaceVar = Pattern.quote("${" + originalName + "}");
             URL = URL.replaceAll(replaceVar, variables.get(var));
         });
-        applyVariablesToMap(variables, postVariables);
+        applyMultiVariablesToMap(variables, postVariables);
         applyVariablesToMap(variables, requestHeaders);
     }
 
@@ -243,7 +246,7 @@ public class ActionRunner implements Runnable {
         Set removeSet = new HashSet<>();
         Map<String, String> newValues = new HashMap<>();
         
-        postVariables.forEach((paramName, paramValue) -> {
+        target.forEach((paramName, paramValue) -> {
             StringProperty paramNameProperty = new SimpleStringProperty(paramName);
             variableTokens.forEach((String originalName) -> {
                 String[] variableNameParts = originalName.split("\\|");
@@ -262,7 +265,49 @@ public class ActionRunner implements Runnable {
                 }
             });
         });
-        postVariables.keySet().removeAll(removeSet);
-        postVariables.putAll(newValues);
+        target.keySet().removeAll(removeSet);
+        target.putAll(newValues);
+    }
+    
+    private void applyMultiVariablesToMap(Map<String, String> variables, Map<String, List<String>> target) {
+        Set<String> variableTokens = action.getVariableNames();
+
+        Set removeSet = new HashSet<>();
+        Map<String, List<String>> newValues = new HashMap<>();
+        
+        target.forEach((paramName, paramValues) -> {
+            StringProperty paramNameProperty = new SimpleStringProperty(paramName);
+            variableTokens.forEach((String originalName) -> {
+                String[] variableNameParts = originalName.split("\\|");
+                String variableName = variableNameParts[0];
+                String variableNameMatchPattern = Pattern.quote("${" + originalName + "}");
+                String variableValue = Matcher.quoteReplacement(variables.get(variableName));
+                String newParamName = paramNameProperty.get().replaceAll(variableNameMatchPattern, variableValue);
+                removeSet.add(paramNameProperty.get());
+                removeSet.add(paramName);
+                if (newValues.get(paramNameProperty.get()) == null) {
+                    newValues.put(paramNameProperty.get(), new ArrayList<>(paramValues.size()));
+                }
+                if (newValues.get(newParamName) == null) {
+                    newValues.put(newParamName, new ArrayList<>(paramValues.size()));
+                }
+                List<String> newParamValues = newValues.get(paramNameProperty.get());
+                for (int i=0; i < paramValues.size(); i++) {          
+                    String newParamValue = newParamValues != null && newParamValues.size() > i && newParamValues.get(i) != null ? newParamValues.get(i) : paramValues.get(i);
+                    newParamValue = newParamValue.replaceAll(variableNameMatchPattern, variableValue);
+                    if (newValues.get(newParamName).size() == i) {
+                        newValues.get(newParamName).add(newParamValue);                        
+                    } else {
+                        newValues.get(newParamName).set(i, newParamValue);
+                    }
+                }
+                if (!paramNameProperty.get().equals(newParamName)) {
+                    newValues.remove(paramNameProperty.get());
+                }
+                paramNameProperty.set(newParamName);
+            });
+        });
+        target.keySet().removeAll(removeSet);
+        target.putAll(newValues);
     }
 }
