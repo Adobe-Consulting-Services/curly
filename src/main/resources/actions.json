@@ -120,12 +120,12 @@
     {
         "name": "Create user",
         "description": "",
-        "command": "-FcreateUser=${user full name} -FauthorizableId=${user name} -Frep:password=${password|changeme} ${server}/libs/granite/security/post/authorizables"
+        "command": "-FcreateUser=${user full name|John Smith} -FauthorizableId=${user name|jsmith} -Frep:password=${password|changeme} -Fmembership=everyone ${server}/libs/granite/security/post/authorizables"
     },
     {
         "name": "Create user in group",
         "description": "You can add multiple membership parameters for more than one group",
-        "command": "-FcreateUser=${user full name} -FauthorizableId=testuser -Frep:password=${password|changeme} -Fmembership=${group|contributor} ${server}/libs/granite/security/post/authorizables"
+        "command": "-FcreateUser=${user full name|John Smith} -FauthorizableId=${userid|jsmith} -Frep:password=${password|changeme} -Fmembership=everyone -Fmembership=${group 1|contributor} ${server}/libs/granite/security/post/authorizables"
     },
     {
         "name": "Create group",
