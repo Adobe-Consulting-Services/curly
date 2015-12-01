@@ -69,7 +69,11 @@ public class CurlyApp extends Application {
     }
 
     public static String getMessage(String key) {
-        return singleton.i18n.getString(key);
+        if (singleton == null) {
+            return key;
+        } else {
+            return singleton.i18n.getString(key);
+        }
     }
 
     public Action editAction(Action source, Runnable persistHandler) {

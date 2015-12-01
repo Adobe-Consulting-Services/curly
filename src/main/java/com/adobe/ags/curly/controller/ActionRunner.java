@@ -22,6 +22,9 @@ import com.adobe.ags.curly.model.ActionResult;
 import com.google.gson.internal.LinkedTreeMap;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +37,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.apache.http.NameValuePair;
@@ -52,14 +57,18 @@ import org.apache.http.util.EntityUtils;
 
 public class ActionRunner implements Runnable {
 
+    public static final String UTF8 = "UTF-8";
+
     public static enum HttpMethod {
         GET, POST, DELETE, HEAD, PUT, TRACE, CONNECT, OPTIONS
     };
     Map<String, List<String>> postVariables = new LinkedTreeMap<>();
+    Map<String, List<String>> getVariables = new LinkedTreeMap<>();
     Map<String, String> requestHeaders = new LinkedTreeMap<>();
     Action action;
     String URL;
     HttpMethod httpMethod = HttpMethod.GET;
+    boolean httpMethodExplicitlySet = false;
     ActionResult response;
     Supplier<CloseableHttpClient> client;
 
@@ -86,20 +95,20 @@ public class ActionRunner implements Runnable {
         try {
             switch (httpMethod) {
                 case GET:
-                    request = new HttpGet(URL);
+                    request = new HttpGet(getURL());
                     break;
                 case HEAD:
-                    request = new HttpHead(URL);
+                    request = new HttpHead(getURL());
                     break;
                 case DELETE:
-                    request = new HttpDelete(URL);
+                    request = new HttpDelete(getURL());
                     break;
                 case POST:
-                    request = new HttpPost(URL);
+                    request = new HttpPost(getURL());
                     addPostParams((HttpPost) request);
                     break;
                 case PUT:
-                    request = new HttpPut(URL);
+                    request = new HttpPut(getURL());
                     addPostParams((HttpPut) request);
                     break;
                 default:
@@ -110,12 +119,33 @@ public class ActionRunner implements Runnable {
             CloseableHttpResponse httpResponse = client.get().execute(request);
             response.processHttpResponse(httpResponse, action.getResultType());
             EntityUtils.consume(httpResponse.getEntity());
-        } catch (IOException ex) {
+        } catch (IOException | URISyntaxException ex) {
             Logger.getLogger(ActionRunner.class.getName()).log(Level.SEVERE, null, ex);
             response.setException(ex);
         } finally {
             response.updateProgress(1);
         }
+    }
+
+    private String getURL() throws URISyntaxException {
+        StringBuilder urlBuilder = new StringBuilder(URL);
+        final BooleanProperty hasQueryString = new SimpleBooleanProperty(URL.contains("?"));
+        getVariables.forEach((key, values) -> {
+            if (values != null) {
+                values.forEach(value -> {
+                    try {
+                        urlBuilder.append(hasQueryString.get() ? "&" : "?")
+                                .append(URLEncoder.encode(key, UTF8))
+                                .append("=")
+                                .append(URLEncoder.encode(value != null ? value : "", UTF8));
+                        hasQueryString.set(false);
+                    } catch (UnsupportedEncodingException ex) {
+                        Logger.getLogger(ActionRunner.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                });
+            }
+        });
+        return urlBuilder.toString();
     }
 
     private void addHeaders(HttpUriRequest request) {
@@ -124,7 +154,7 @@ public class ActionRunner implements Runnable {
 
     private void addPostParams(HttpEntityEnclosingRequestBase request) throws UnsupportedEncodingException {
         List<NameValuePair> formParams = new ArrayList<>();
-        postVariables.forEach((name, values) -> values.forEach(value->formParams.add(new BasicNameValuePair(name, value))));
+        postVariables.forEach((name, values) -> values.forEach(value -> formParams.add(new BasicNameValuePair(name, value))));
         request.setEntity(new UrlEncodedFormEntity(formParams));
     }
 
@@ -186,16 +216,24 @@ public class ActionRunner implements Runnable {
         switch (command) {
             case 'F':
                 httpMethod = HttpMethod.POST;
+                httpMethodExplicitlySet = true;
+            case 'd':
+                Map<String, List<String>> vars = postVariables;
+                if (!httpMethodExplicitlySet) {
+                    httpMethod = HttpMethod.POST;
+                } else if (httpMethod != HttpMethod.POST) {
+                    vars = getVariables;
+                }
                 int equals = param.indexOf('=');
                 if (equals > -1) {
                     String fieldName = detokenizeParameters(param.substring(0, equals));
-                    String value = equals < param.length()-1 ? detokenizeParameters(param.substring(equals+1)) : null;
-                    if (!postVariables.containsKey(fieldName)) {
-                        postVariables.put(fieldName, new ArrayList<>());
+                    String value = equals < param.length() - 1 ? detokenizeParameters(param.substring(equals + 1)) : null;
+                    if (!vars.containsKey(fieldName)) {
+                        vars.put(fieldName, new ArrayList<>());
                     }
-                    postVariables.get(fieldName).add(value);
+                    vars.get(fieldName).add(value);
                 } else {
-                    throw new ParseException(CurlyApp.getMessage(MISSING_NVP_FORM_ERROR), offset + 1);                    
+                    throw new ParseException(CurlyApp.getMessage(MISSING_NVP_FORM_ERROR), offset + 1);
                 }
                 return true;
             case 'X':
@@ -218,6 +256,9 @@ public class ActionRunner implements Runnable {
             case 'u':
                 // ignored parameterized options
                 return true;
+            case 'G':
+                httpMethodExplicitlySet = true;
+                httpMethod = HttpMethod.GET;
             case 'S':
             case '#':
             case 'v':
@@ -237,6 +278,7 @@ public class ActionRunner implements Runnable {
             URL = URL.replaceAll(replaceVar, variables.get(var));
         });
         applyMultiVariablesToMap(variables, postVariables);
+        applyMultiVariablesToMap(variables, getVariables);
         applyVariablesToMap(variables, requestHeaders);
     }
 
@@ -245,7 +287,7 @@ public class ActionRunner implements Runnable {
 
         Set removeSet = new HashSet<>();
         Map<String, String> newValues = new HashMap<>();
-        
+
         target.forEach((paramName, paramValue) -> {
             StringProperty paramNameProperty = new SimpleStringProperty(paramName);
             variableTokens.forEach((String originalName) -> {
@@ -268,13 +310,13 @@ public class ActionRunner implements Runnable {
         target.keySet().removeAll(removeSet);
         target.putAll(newValues);
     }
-    
+
     private void applyMultiVariablesToMap(Map<String, String> variables, Map<String, List<String>> target) {
         Set<String> variableTokens = action.getVariableNames();
 
         Set removeSet = new HashSet<>();
         Map<String, List<String>> newValues = new HashMap<>();
-        
+
         target.forEach((paramName, paramValues) -> {
             StringProperty paramNameProperty = new SimpleStringProperty(paramName);
             variableTokens.forEach((String originalName) -> {
@@ -292,11 +334,11 @@ public class ActionRunner implements Runnable {
                     newValues.put(newParamName, new ArrayList<>(paramValues.size()));
                 }
                 List<String> newParamValues = newValues.get(paramNameProperty.get());
-                for (int i=0; i < paramValues.size(); i++) {          
+                for (int i = 0; i < paramValues.size(); i++) {
                     String newParamValue = newParamValues != null && newParamValues.size() > i && newParamValues.get(i) != null ? newParamValues.get(i) : paramValues.get(i);
                     newParamValue = newParamValue.replaceAll(variableNameMatchPattern, variableValue);
                     if (newValues.get(newParamName).size() == i) {
-                        newValues.get(newParamName).add(newParamValue);                        
+                        newValues.get(newParamName).add(newParamValue);
                     } else {
                         newValues.get(newParamName).set(i, newParamValue);
                     }
