@@ -18,6 +18,7 @@ package com.adobe.ags.curly;
 public class Messages {
 
     public static final String ACTIVITY_TERMINATED = "activityTerminated";
+    public static final String ATTEMPTING_CONNECTION = "attemptingConnection";
     public static final String CHOOSE_TEXT_OR_EXCEL = "chooseTextOrExcel";
     public static final String COMPLETED_SUCCESSFUL = "completedSuccessful";
     public static final String COMPLETED_UNSUCCESSFUL = "completedUnsuccessful";

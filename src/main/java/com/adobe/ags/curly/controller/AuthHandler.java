@@ -98,7 +98,7 @@ public class AuthHandler {
         final int testValue = activityCounter.incrementAndGet();
         testExecutor.schedule(()->{
             if (activityCounter.get() == testValue) {
-                Platform.runLater(this::loginTest);
+                loginTest();
             }
         }, 500, TimeUnit.MILLISECONDS);
     }
@@ -107,11 +107,13 @@ public class AuthHandler {
         CloseableHttpClient client = null;
         try {
             if (!model.requiredFieldsPresentProperty().get()) {
-                model.loginConfirmedProperty().set(false);
-                model.statusMessageProperty().set(CurlyApp.getMessage(INCOMPLETE_FIELDS));
+                Platform.runLater(()->{
+                    model.loginConfirmedProperty().set(false);
+                    model.statusMessageProperty().set(CurlyApp.getMessage(INCOMPLETE_FIELDS));
+                });
                 return;
             }
-            
+                                
             String url = getUrlBase() + TEST_PAGE;
             URL testUrl = new URL(url);
             InetAddress address = InetAddress.getByName(testUrl.getHost());
@@ -119,26 +121,38 @@ public class AuthHandler {
                 throw new UnknownHostException("Unknown host "+testUrl.getHost());
             }
             
+            Platform.runLater(()->{
+                model.loginConfirmedProperty().set(false);
+                model.statusMessageProperty().set(CurlyApp.getMessage(ATTEMPTING_CONNECTION));            
+            });
             client = getAuthenticatedClient();
             HttpGet loginTest = new HttpGet(url);
             HttpResponse response = client.execute(loginTest);
             StatusLine responseStatus = response.getStatusLine();
 
             if (responseStatus.getStatusCode() >= 200 && responseStatus.getStatusCode() < 300) {
-                model.loginConfirmedProperty().set(true);
-                model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_SUCCESSFUL));
+                Platform.runLater(()->{
+                    model.loginConfirmedProperty().set(true);
+                    model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_SUCCESSFUL));
+                });
             } else {
-                model.loginConfirmedProperty().set(false);
-                model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_ERROR) + responseStatus.getReasonPhrase() + " (" + responseStatus.getStatusCode() + ")");
+                Platform.runLater(()->{
+                    model.loginConfirmedProperty().set(false);
+                    model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_ERROR) + responseStatus.getReasonPhrase() + " (" + responseStatus.getStatusCode() + ")");
+                });
             }
         } catch (MalformedURLException | IllegalArgumentException | UnknownHostException ex) {
             Logger.getLogger(AuthHandler.class.getName()).log(Level.SEVERE, null, ex);
-            model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_ERROR) + ex.getMessage());
-            model.loginConfirmedProperty().set(false);
-        } catch (IOException ex) {
+            Platform.runLater(()->{
+                model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_ERROR) + ex.getMessage());
+                model.loginConfirmedProperty().set(false);
+            });
+        } catch (Throwable ex) {
             Logger.getLogger(AuthHandler.class.getName()).log(Level.SEVERE, null, ex);
-            model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_ERROR) + ex.getMessage());
-            model.loginConfirmedProperty().set(false);
+            Platform.runLater(()->{
+                model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_ERROR) + ex.getMessage());
+                model.loginConfirmedProperty().set(false);
+            });
         } finally {
             if (client != null) {
                 try {
