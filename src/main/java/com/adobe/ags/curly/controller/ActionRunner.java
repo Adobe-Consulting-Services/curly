@@ -22,7 +22,6 @@ import com.adobe.ags.curly.model.ActionResult;
 import com.google.gson.internal.LinkedTreeMap;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.ParseException;
@@ -67,6 +66,7 @@ public class ActionRunner implements Runnable {
     Map<String, String> requestHeaders = new LinkedTreeMap<>();
     Action action;
     String URL;
+    long delay = -1;
     HttpMethod httpMethod = HttpMethod.GET;
     boolean httpMethodExplicitlySet = false;
     ActionResult response;
@@ -90,6 +90,15 @@ public class ActionRunner implements Runnable {
             return;
         }
         response.updateProgress(0.5);
+        
+        if (delay > 0) {
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException ex) {
+                response.setException(ex);
+                return;
+            }
+        }
 
         HttpUriRequest request;
         try {
@@ -128,7 +137,10 @@ public class ActionRunner implements Runnable {
     }
 
     private String getURL() throws URISyntaxException {
-        StringBuilder urlBuilder = new StringBuilder(URL);
+        StringBuilder urlBuilder = new StringBuilder();
+        String URI = URL.contains("?") ? URL.substring(0, URL.indexOf('?')) : URL;
+        URI = URI.replaceAll("\\s", "%20");
+        urlBuilder.append(URI);
         final BooleanProperty hasQueryString = new SimpleBooleanProperty(URL.contains("?"));
         getVariables.forEach((key, values) -> {
             if (values != null) {
@@ -264,6 +276,9 @@ public class ActionRunner implements Runnable {
             case 'v':
                 //ignored no-parameter flags
                 return false;
+            case 'w':
+                delay = Long.parseLong(param);
+                return true;
             default:
                 throw new ParseException(CurlyApp.getMessage(UNKNOWN_PARAMETER) + ": " + command, offset);
         }
