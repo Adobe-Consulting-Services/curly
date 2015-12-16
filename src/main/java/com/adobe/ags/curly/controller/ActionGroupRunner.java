@@ -97,7 +97,9 @@ public class ActionGroupRunner implements TaskRunner {
             results.addDetail(response);
         });
         try {
-            client.close();
+            if (client != null) {
+                client.close();
+            }
         } catch (IOException ex) {
             Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
         }
