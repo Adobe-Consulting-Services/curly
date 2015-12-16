@@ -290,7 +290,7 @@ public class ActionRunner implements Runnable {
             String[] parts = originalName.split("\\|");
             String var = parts[0];
             String replaceVar = Pattern.quote("${" + originalName + "}");
-            URL = URL.replaceAll(replaceVar, variables.get(var));
+            URL = URL.replaceAll(replaceVar, Matcher.quoteReplacement(variables.get(var)));
         });
         applyMultiVariablesToMap(variables, postVariables);
         applyMultiVariablesToMap(variables, getVariables);
