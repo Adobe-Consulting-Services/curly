@@ -15,6 +15,7 @@
  */
 package com.adobe.ags.curly.model;
 
+import com.adobe.ags.curly.CurlyApp.ErrorBehavior;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +45,8 @@ public class Action implements Serializable {
     private String description;
     private String command;
     private ResultType resultType = ResultType.html;
+    private ErrorBehavior errorBehavior = ErrorBehavior.GLOBAL;
+    private long delay = 0;
 
     public Action() {
     }
@@ -88,6 +91,22 @@ public class Action implements Serializable {
      */
     public void setCommand(String command) {
         this.command = command;
+    }
+    
+    public ErrorBehavior getErrorBehavior() {
+        return errorBehavior;
+    }
+    
+    public void setErrorBehavior(ErrorBehavior behavior) {
+        errorBehavior = behavior;
+    }
+    
+    public long getDelay() {
+        return delay;
+    }
+    
+    public void setDelay(long d) {
+        delay = d;
     }
     
     @Override

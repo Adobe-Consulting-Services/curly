@@ -15,6 +15,8 @@
  */
 package com.adobe.ags.curly.controller;
 
+import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.CurlyApp.ErrorBehavior;
 import com.adobe.ags.curly.model.Action;
 import com.adobe.ags.curly.model.ActionCatalog;
 import com.sun.javafx.collections.ObservableListWrapper;
@@ -28,18 +30,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.util.StringConverter;
 
 public class ActionPanelController {
+
     Runnable persistHandler;
     Runnable closeHandler;
-    
+
     Action source;
-
-    @FXML // ResourceBundle that was given to the FXMLLoader
-    private ResourceBundle resources;
-
-    @FXML // URL location of the FXML file that was given to the FXMLLoader
-    private URL location;
 
     @FXML // fx:id="predefinedCombobox"
     private ComboBox<Action> predefinedCombobox; // Value injected by FXMLLoader
@@ -50,12 +48,18 @@ public class ActionPanelController {
     @FXML // fx:id="descriptionField"
     private TextArea descriptionField; // Value injected by FXMLLoader
 
+    @FXML // fx:id="delayField"
+    private TextField delayField; // Value injected by FXMLLoader
+
     @FXML // fx:id="curlField"
     private TextArea curlField; // Value injected by FXMLLoader
 
+    @FXML // fx:id="predefinedCombobox"
+    private ComboBox<ErrorBehavior> errorBehaviorCombobox; // Value injected by FXMLLoader
+
     @FXML
     void cancelActionPerformed(ActionEvent event) {
-        closeHandler.run();        
+        closeHandler.run();
     }
 
     @FXML
@@ -68,6 +72,10 @@ public class ActionPanelController {
         source.setName(actionNameField.getText());
         source.setDescription(descriptionField.getText());
         source.setCommand(curlField.getText());
+        if (delayField.getText() != null) {
+            source.setDelay(Long.parseLong(delayField.getText()));
+        }
+        source.setErrorBehavior(errorBehaviorCombobox.getValue());
         if (persistHandler != null) {
             persistHandler.run();
         }
@@ -86,7 +94,20 @@ public class ActionPanelController {
         predefinedCombobox.getSelectionModel().selectedItemProperty().addListener(
                 (ObservableValue<? extends Action> observable, Action oldValue, Action newValue) -> {
                     populateValues(observable.getValue(), false);
+                });
+        errorBehaviorCombobox.getItems().addAll(ErrorBehavior.values());
+        errorBehaviorCombobox.setConverter(new StringConverter<ErrorBehavior>() {
+            @Override
+            public String toString(ErrorBehavior object) {
+                return CurlyApp.getMessage("errorBehavior_"+object.name());
+            }
+
+            @Override
+            public ErrorBehavior fromString(String string) {
+                return null;
+            }
         });
+        errorBehaviorCombobox.setValue(ErrorBehavior.GLOBAL);
     }
 
     public void populateValues(Action source, boolean retainAsSource) {
@@ -105,7 +126,7 @@ public class ActionPanelController {
     public void onPersist(Runnable persistHandler) {
         this.persistHandler = persistHandler;
     }
-    
+
     public void whenFinished(Runnable handler) {
         closeHandler = handler;
     }

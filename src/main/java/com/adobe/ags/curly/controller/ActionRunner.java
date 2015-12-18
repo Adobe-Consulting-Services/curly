@@ -66,7 +66,6 @@ public class ActionRunner implements Runnable {
     Map<String, String> requestHeaders = new LinkedTreeMap<>();
     Action action;
     String URL;
-    long delay = -1;
     HttpMethod httpMethod = HttpMethod.GET;
     boolean httpMethodExplicitlySet = false;
     ActionResult response;
@@ -91,9 +90,9 @@ public class ActionRunner implements Runnable {
         }
         response.updateProgress(0.5);
         
-        if (delay > 0) {
+        if (action.getDelay() > 0) {
             try {
-                Thread.sleep(delay);
+                Thread.sleep(action.getDelay());
             } catch (InterruptedException ex) {
                 response.setException(ex);
                 return;
@@ -276,9 +275,6 @@ public class ActionRunner implements Runnable {
             case 'v':
                 //ignored no-parameter flags
                 return false;
-            case 'w':
-                delay = Long.parseLong(param);
-                return true;
             default:
                 throw new ParseException(CurlyApp.getMessage(UNKNOWN_PARAMETER) + ": " + command, offset);
         }

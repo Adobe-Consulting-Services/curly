@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
 Copyright 2015 Adobe.
 
@@ -22,7 +23,7 @@ limitations under the License.
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="300.0" prefWidth="525.0" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.adobe.ags.curly.controller.ActionPanelController">
+<VBox prefHeight="339.0" prefWidth="544.0" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.adobe.ags.curly.controller.ActionPanelController">
    <children>
       <HBox maxWidth="1.7976931348623157E308" spacing="5.0" VBox.vgrow="NEVER">
          <children>
@@ -39,18 +40,33 @@ limitations under the License.
         <rowConstraints>
           <RowConstraints fillHeight="false" vgrow="NEVER" />
             <RowConstraints maxHeight="1.7976931348623157E308" minHeight="10.0" prefHeight="64.0" vgrow="ALWAYS" />
+            <RowConstraints fillHeight="false" maxHeight="1.7976931348623157E308" minHeight="10.0" vgrow="NEVER" />
           <RowConstraints maxHeight="1.7976931348623157E308" minHeight="0.0" prefHeight="40.0" vgrow="ALWAYS" />
+            <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
         </rowConstraints>
          <children>
             <Label alignment="CENTER_RIGHT" prefHeight="16.0" prefWidth="120.0" text="%actionName" GridPane.halignment="RIGHT" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" />
-            <Label alignment="CENTER_RIGHT" prefHeight="16.0" prefWidth="120.0" text="%curlCommand" textAlignment="RIGHT" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+            <Label alignment="CENTER_RIGHT" prefHeight="16.0" prefWidth="120.0" text="%curlCommand" textAlignment="RIGHT" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
             <TextField fx:id="actionNameField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
             <TextArea fx:id="descriptionField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="125.0" prefWidth="287.0" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="SOMETIMES" />
             <Label alignment="CENTER_RIGHT" prefHeight="16.0" prefWidth="120.0" text="%description" GridPane.hgrow="NEVER" GridPane.rowIndex="1" />
-            <TextArea fx:id="curlField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
+            <TextArea fx:id="curlField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.vgrow="ALWAYS" />
+            <Label text="%delay" GridPane.rowIndex="2" />
+            <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+               <children>
+                  <TextField fx:id="delayField" promptText="0" />
+                  <Label text="%milliseconds">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Label>
+               </children>
+            </HBox>
+            <Label text="%errorBehavior" GridPane.rowIndex="4" />
+            <ComboBox fx:id="errorBehaviorCombobox" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" />
          </children>
       </GridPane>
-      <BorderPane>
+      <BorderPane prefWidth="538.0">
          <right>
             <HBox spacing="11.0" BorderPane.alignment="CENTER">
                <children>

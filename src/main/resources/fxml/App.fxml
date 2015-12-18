@@ -34,13 +34,13 @@ limitations under the License.
                 </Menu>
             <Menu mnemonicParsing="false" text="%options">
                <items>
-                  <RadioMenuItem mnemonicParsing="false" onAction="#ignoreErrors" selected="true" text="%logErrorsAndIgnore">
+                  <RadioMenuItem mnemonicParsing="false" onAction="#ignoreErrors" selected="true" text="%errorBehavior_IGNORE">
                      <toggleGroup>
                         <ToggleGroup fx:id="errorBehavior" />
                      </toggleGroup>
                   </RadioMenuItem>
-                  <RadioMenuItem mnemonicParsing="false" onAction="#skipIfError" text="%skipIfError" toggleGroup="$errorBehavior" />
-                  <RadioMenuItem mnemonicParsing="false" onAction="#haltIfError" text="%haltOnError" toggleGroup="$errorBehavior" />
+                  <RadioMenuItem mnemonicParsing="false" onAction="#skipIfError" text="%errorBehavior_SKIP" toggleGroup="$errorBehavior" />
+                  <RadioMenuItem mnemonicParsing="false" onAction="#haltIfError" text="%errorBehavior_HALT" toggleGroup="$errorBehavior" />
                </items>
             </Menu>
                 <Menu mnemonicParsing="false" text="%help">

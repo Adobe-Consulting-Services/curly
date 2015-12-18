@@ -16,6 +16,7 @@
 package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.CurlyApp.ErrorBehavior;
 import com.adobe.ags.curly.model.Action;
 import com.adobe.ags.curly.model.ActionGroupRunnerResult;
 import com.adobe.ags.curly.model.ActionResult;
@@ -41,11 +42,13 @@ public class ActionGroupRunner implements TaskRunner {
     BooleanProperty skipTheRest = new SimpleBooleanProperty(false);
     ActionGroupRunnerResult results;
     Supplier<CloseableHttpClient> clientSupplier;
+    Action lastAction;
 
     public ActionGroupRunner(String taskName, Supplier<CloseableHttpClient> clientSupplier, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) throws ParseException {
         this.actions = new LinkedHashMap<>();
         this.clientSupplier = clientSupplier;
         actions.forEach((action)->{
+            lastAction = action;
             ActionRunner runner = null;
             try {
                 runner = new ActionRunner(this::getClient, action, variables);
@@ -86,7 +89,10 @@ public class ActionGroupRunner implements TaskRunner {
                 runner.run();
                 if (!runner.response.completelySuccessful().get()) {
                     handleError();
+                } else if (action.getErrorBehavior() == ErrorBehavior.SKIP_IF_SUCCESSFUL) {
+                    skipTheRest.set(true);
                 }
+
                 response = runner.response;
             } catch (Exception ex) {
                 Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
@@ -106,7 +112,13 @@ public class ActionGroupRunner implements TaskRunner {
     }
 
     private void handleError() {
-        switch (CurlyApp.getInstance().errorBehaviorProperty().get()) {
+        ErrorBehavior behavior;
+        if (lastAction == null || lastAction.getErrorBehavior() == ErrorBehavior.GLOBAL) {
+            behavior = CurlyApp.getInstance().errorBehaviorProperty().get();
+        } else {
+            behavior = lastAction.getErrorBehavior();
+        }
+        switch (behavior) {
             case HALT:
                 CurlyApp.getInstance().runningProperty().set(false);
                 break;

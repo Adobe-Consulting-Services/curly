@@ -45,7 +45,7 @@ import javafx.stage.Stage;
 public class CurlyApp extends Application {
 
     public static enum ErrorBehavior {
-        IGNORE, SKIP, HALT
+        IGNORE, SKIP, SKIP_IF_SUCCESSFUL, HALT, GLOBAL
     };
     static CurlyApp singleton;
     static final String APPLICATION_TITLE = "applicationTitle";
