@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  *
  * @author brobert
  */
-public class ErrorBehaviorTests {
+public class ErrorBehaviorTest {
 
     static TestWebServer webserver;
     public static final String TEST_USER = "USER";
@@ -48,7 +48,7 @@ public class ErrorBehaviorTests {
     AuthHandler handler;
     CloseableHttpClient client;
 
-    public ErrorBehaviorTests() {
+    public ErrorBehaviorTest() {
     }
 
     @BeforeClass
