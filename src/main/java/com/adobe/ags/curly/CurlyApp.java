@@ -55,6 +55,9 @@ public class CurlyApp extends Application {
     private ResourceBundle i18n;
 
     public static CurlyApp getInstance() {
+        if (singleton == null) {
+            singleton = new CurlyApp();
+        }
         return singleton;
     }
 
@@ -69,7 +72,7 @@ public class CurlyApp extends Application {
     }
 
     public static String getMessage(String key) {
-        if (singleton == null) {
+        if (singleton == null || singleton.i18n == null) {
             return key;
         } else {
             return singleton.i18n.getString(key);

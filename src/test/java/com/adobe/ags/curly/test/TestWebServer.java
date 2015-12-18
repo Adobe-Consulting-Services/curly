@@ -62,15 +62,16 @@ public class TestWebServer {
     void handleHttpRequest(HttpRequest request, HttpResponse response, HttpContext context) throws UnsupportedEncodingException {
         lastRequest = request;
         try {
-            if (requireLogin) {
-                Header authHeader = request.getFirstHeader("Authorization");
-                if (authHeader == null) {
-                    response.setStatusCode(401);
-                    response.setHeader("WWW-Authenticate", "Basic realm=\"test\"");
-                }
+            if (requireLogin && request.getFirstHeader("Authorization") == null) {
+                response.setStatusCode(401);
+                response.setHeader("WWW-Authenticate", "Basic realm=\"test\"");
             } else {
                 Thread.sleep(processingDelay);
-                response.setEntity(new StringEntity(responseMessage));
+                if (request.getRequestLine().getUri().contains("failure")) {
+                    response.setStatusCode(403);
+                } else {
+                    response.setEntity(new StringEntity(responseMessage));
+                }
             }
         } catch (InterruptedException ex) {
             Logger.getLogger(TestWebServer.class.getName()).log(Level.SEVERE, null, ex);
