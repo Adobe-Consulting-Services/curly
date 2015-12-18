@@ -20,6 +20,7 @@ import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.model.Action;
 import com.adobe.ags.curly.model.ActionResult;
 import com.google.gson.internal.LinkedTreeMap;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -50,6 +51,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
@@ -68,6 +70,7 @@ public class ActionRunner implements Runnable {
     String URL;
     HttpMethod httpMethod = HttpMethod.GET;
     boolean httpMethodExplicitlySet = false;
+    boolean multipart = false;
     ActionResult response;
     Supplier<CloseableHttpClient> client;
 
@@ -89,7 +92,7 @@ public class ActionRunner implements Runnable {
             return;
         }
         response.updateProgress(0.5);
-        
+
         if (action.getDelay() > 0) {
             try {
                 Thread.sleep(action.getDelay());
@@ -164,9 +167,24 @@ public class ActionRunner implements Runnable {
     }
 
     private void addPostParams(HttpEntityEnclosingRequestBase request) throws UnsupportedEncodingException {
+        final MultipartEntityBuilder multipartBuilder = MultipartEntityBuilder.create();
         List<NameValuePair> formParams = new ArrayList<>();
-        postVariables.forEach((name, values) -> values.forEach(value -> formParams.add(new BasicNameValuePair(name, value))));
-        request.setEntity(new UrlEncodedFormEntity(formParams));
+        postVariables.forEach((name, values) -> values.forEach(value -> {
+            if (multipart) {
+                if (value.startsWith("@")) {
+                    multipartBuilder.addBinaryBody(name, new File(value.substring(1)));
+                } else {
+                    multipartBuilder.addTextBody(name, value);
+                }
+            } else {
+                formParams.add(new BasicNameValuePair(name, value));
+            }
+        }));
+        if (multipart) {
+            request.setEntity(multipartBuilder.build());
+        } else {
+            request.setEntity(new UrlEncodedFormEntity(formParams));
+        }
     }
 
     private void parseCommand(Action action) throws ParseException {
@@ -239,6 +257,10 @@ public class ActionRunner implements Runnable {
                 if (equals > -1) {
                     String fieldName = detokenizeParameters(param.substring(0, equals));
                     String value = equals < param.length() - 1 ? detokenizeParameters(param.substring(equals + 1)) : null;
+                    if (command == 'F' && value != null && value.startsWith("@")) {
+                        httpMethod = HttpMethod.POST;
+                        multipart = true;
+                    }
                     if (!vars.containsKey(fieldName)) {
                         vars.put(fieldName, new ArrayList<>());
                     }
