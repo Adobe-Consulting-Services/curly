@@ -72,7 +72,7 @@ public class ActionPanelController {
         source.setName(actionNameField.getText());
         source.setDescription(descriptionField.getText());
         source.setCommand(curlField.getText());
-        if (delayField.getText() != null && !delayField.getText().isEmpty()) {
+        if (delayField.getText() != null && !delayField.getText().trim().isEmpty()) {
             source.setDelay(Long.parseLong(delayField.getText()));
         }
         source.setErrorBehavior(errorBehaviorCombobox.getValue());

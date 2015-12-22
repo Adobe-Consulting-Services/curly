@@ -36,15 +36,16 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 public class ActionResult extends RunnerResult<RunnerResult> {
+
     public static enum RESULT_TYPE {
         NEUTRAL(
-            // These are successful or unsuccessful depending on the status code
-                Pattern.compile(".*?"+Pattern.quote("<div id=\"Message\">") + "(.*)")
+                // These are successful or unsuccessful depending on the status code
+                Pattern.compile(".*?" + Pattern.quote("<div id=\"Message\">") + "(.*)")
         ),
         WARN(),
         FAIL(
-            // Regardless of status code, if these are detected the operation should log as failure
-                Pattern.compile(".*?"+Pattern.quote("<div class=\"error\">") + "(.*?)" + Pattern.quote("</div>"))
+                // Regardless of status code, if these are detected the operation should log as failure
+                Pattern.compile(".*?" + Pattern.quote("<div class=\"error\">") + "(.*?)" + Pattern.quote("</div>"))
         );
 
         Pattern[] patterns;
@@ -53,8 +54,9 @@ public class ActionResult extends RunnerResult<RunnerResult> {
             patterns = p;
         }
     };
-    
+
     private static class ParsedResponseMessage {
+
         RESULT_TYPE type;
         String message;
 
@@ -116,6 +118,9 @@ public class ActionResult extends RunnerResult<RunnerResult> {
     }
 
     private Optional<ParsedResponseMessage> extractHtmlMessage(CloseableHttpResponse httpResponse) throws IOException {
+        if (httpResponse == null || httpResponse.getEntity() == null) {
+            return Optional.empty();
+        }
         InputStreamReader reader = new InputStreamReader(httpResponse.getEntity().getContent());
         Stream<String> lines = new BufferedReader(reader).lines();
         if (debugMode) {
@@ -146,7 +151,7 @@ public class ActionResult extends RunnerResult<RunnerResult> {
         StringBuilder sb = new StringBuilder();
         sb.append("<tr>");
         reportRow().forEach(value -> sb.append("<td>").append(value.getValue().toString()).append("</td>"));
-        
+
         sb.append("<td><pre>");
         if (responseMessage != null) {
             responseMessage.stream().map(str -> str.replaceAll("<", "&lt;") + "\n").forEach(sb::append);

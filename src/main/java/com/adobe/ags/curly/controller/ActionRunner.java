@@ -51,6 +51,8 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -69,6 +71,7 @@ public class ActionRunner implements Runnable {
     Action action;
     String URL;
     HttpMethod httpMethod = HttpMethod.GET;
+    String putFile="";
     boolean httpMethodExplicitlySet = false;
     boolean multipart = false;
     ActionResult response;
@@ -120,7 +123,7 @@ public class ActionRunner implements Runnable {
                     break;
                 case PUT:
                     request = new HttpPut(getURL());
-                    addPostParams((HttpPut) request);
+                    ((HttpPut)request).setEntity(new FileEntity(new File(putFile)));
                     break;
                 default:
                     throw new UnsupportedOperationException(CurlyApp.getMessage(UNSUPPORTED_METHOD_ERROR) + ": " + httpMethod.name());
@@ -172,7 +175,8 @@ public class ActionRunner implements Runnable {
         postVariables.forEach((name, values) -> values.forEach(value -> {
             if (multipart) {
                 if (value.startsWith("@")) {
-                    multipartBuilder.addBinaryBody(name, new File(value.substring(1)));
+                    File f = new File(value.substring(1));
+                    multipartBuilder.addBinaryBody(name, f, ContentType.DEFAULT_BINARY, f.getName());
                 } else {
                     multipartBuilder.addTextBody(name, value);
                 }
@@ -269,6 +273,11 @@ public class ActionRunner implements Runnable {
                     throw new ParseException(CurlyApp.getMessage(MISSING_NVP_FORM_ERROR), offset + 1);
                 }
                 return true;
+            case 'T':
+                httpMethod = HttpMethod.PUT;
+                multipart = false;
+                putFile = detokenizeParameters(param);
+                return true;
             case 'X':
                 try {
                     httpMethod = HttpMethod.valueOf(param.toUpperCase());
@@ -309,6 +318,7 @@ public class ActionRunner implements Runnable {
             String var = parts[0];
             String replaceVar = Pattern.quote("${" + originalName + "}");
             URL = URL.replaceAll(replaceVar, Matcher.quoteReplacement(variables.get(var)));
+            putFile = putFile.replaceAll(replaceVar,Matcher.quoteReplacement(variables.get(var)));
         });
         applyMultiVariablesToMap(variables, postVariables);
         applyMultiVariablesToMap(variables, getVariables);
@@ -347,8 +357,8 @@ public class ActionRunner implements Runnable {
     private void applyMultiVariablesToMap(Map<String, String> variables, Map<String, List<String>> target) {
         Set<String> variableTokens = action.getVariableNames();
 
-        Set removeSet = new HashSet<>();
         Map<String, List<String>> newValues = new HashMap<>();
+        Set removeSet = new HashSet<>();
 
         target.forEach((paramName, paramValues) -> {
             StringProperty paramNameProperty = new SimpleStringProperty(paramName);
@@ -370,6 +380,13 @@ public class ActionRunner implements Runnable {
                 for (int i = 0; i < paramValues.size(); i++) {
                     String newParamValue = newParamValues != null && newParamValues.size() > i && newParamValues.get(i) != null ? newParamValues.get(i) : paramValues.get(i);
                     newParamValue = newParamValue.replaceAll(variableNameMatchPattern, variableValue);
+                    if (newParamName.contains("/") && newParamValue.equals("@" + newParamName)) {
+                        // The upload name should actually be the file name, not the full path of the file.
+                        removeSet.add(newParamName);
+                        newValues.remove(newParamName);
+                        newParamName = newParamName.substring(newParamName.lastIndexOf("/") + 1);
+                        newValues.put(newParamName, newParamValues);
+                    }
                     if (newValues.get(newParamName).size() == i) {
                         newValues.get(newParamName).add(newParamValue);
                     } else {

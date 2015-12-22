@@ -60,6 +60,12 @@
         "type":"html"
     },
     {
+        "name": "Upload an asset/file",
+        "description": "Create a new file at a specified JCR path",
+        "command": "-T ${directory|/path/to/file}/${file name} ${server}${jcr path|/content/dam}/${file name|myimage.jpg}",
+        "type":"html"
+    },
+    {
         "name": "Verify node exists",
         "description": "If node exists, the test passes.  If not, the test fails",
         "command": "${server}${node path}.json",
