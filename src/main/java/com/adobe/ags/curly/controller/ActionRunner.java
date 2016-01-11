@@ -17,7 +17,8 @@ package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.CurlyApp;
 import static com.adobe.ags.curly.Messages.*;
-import com.adobe.ags.curly.model.Action;
+import com.adobe.ags.curly.model.ActionUtils;
+import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.model.ActionResult;
 import com.google.gson.internal.LinkedTreeMap;
 import java.io.File;
@@ -227,7 +228,7 @@ public class ActionRunner implements Runnable {
     }
 
     private String tokenizeParameters(String str) {
-        Set<String> variableTokens = action.getVariableNames();
+        Set<String> variableTokens = ActionUtils.getVariableNames(action);
         int tokenCounter = 0;
         for (String var : variableTokens) {
             String varPattern = Pattern.quote("${") + var + "(\\|.*?)?" + Pattern.quote("}");
@@ -237,7 +238,7 @@ public class ActionRunner implements Runnable {
     }
 
     private String detokenizeParameters(String str) {
-        Set<String> variableTokens = action.getVariableNames();
+        Set<String> variableTokens = ActionUtils.getVariableNames(action);
         int tokenCounter = 0;
         for (String var : variableTokens) {
             str = str.replaceAll(Pattern.quote("${" + (tokenCounter++) + "}"), Matcher.quoteReplacement("${" + var + "}"));
@@ -312,7 +313,7 @@ public class ActionRunner implements Runnable {
     }
 
     private void applyVariables(Map<String, String> variables) {
-        Set<String> variableTokens = action.getVariableNames();
+        Set<String> variableTokens = ActionUtils.getVariableNames(action);
         variableTokens.forEach((String originalName) -> {
             String[] parts = originalName.split("\\|");
             String var = parts[0];
@@ -326,7 +327,7 @@ public class ActionRunner implements Runnable {
     }
 
     private void applyVariablesToMap(Map<String, String> variables, Map<String, String> target) {
-        Set<String> variableTokens = action.getVariableNames();
+        Set<String> variableTokens = ActionUtils.getVariableNames(action);
 
         Set removeSet = new HashSet<>();
         Map<String, String> newValues = new HashMap<>();
@@ -355,7 +356,7 @@ public class ActionRunner implements Runnable {
     }
 
     private void applyMultiVariablesToMap(Map<String, String> variables, Map<String, List<String>> target) {
-        Set<String> variableTokens = action.getVariableNames();
+        Set<String> variableTokens = ActionUtils.getVariableNames(action);
 
         Map<String, List<String>> newValues = new HashMap<>();
         Set removeSet = new HashSet<>();

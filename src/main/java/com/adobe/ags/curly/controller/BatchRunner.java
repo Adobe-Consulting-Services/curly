@@ -16,7 +16,7 @@
 package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.CurlyApp;
-import com.adobe.ags.curly.model.Action;
+import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.model.BatchRunnerResult;
 import com.adobe.ags.curly.model.RunnerResult;
 import com.adobe.ags.curly.model.TaskRunner;

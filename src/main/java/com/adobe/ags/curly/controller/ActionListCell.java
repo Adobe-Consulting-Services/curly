@@ -16,7 +16,7 @@
 package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.CurlyApp;
-import com.adobe.ags.curly.model.Action;
+import com.adobe.ags.curly.xml.Action;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Tooltip;

@@ -17,6 +17,7 @@ package com.adobe.ags.curly.model;
 
 import com.adobe.ags.curly.CurlyApp;
 import static com.adobe.ags.curly.Messages.*;
+import com.adobe.ags.curly.xml.Action;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

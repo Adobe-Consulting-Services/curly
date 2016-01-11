@@ -19,7 +19,9 @@ import com.adobe.ags.curly.ConnectionManager;
 import com.adobe.ags.curly.CurlyApp;
 import com.adobe.ags.curly.controller.ActionGroupRunner;
 import com.adobe.ags.curly.controller.AuthHandler;
-import com.adobe.ags.curly.model.Action;
+import com.adobe.ags.curly.xml.Action;
+import com.adobe.ags.curly.xml.ErrorBehavior;
+import com.adobe.ags.curly.xml.ResultType;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -92,7 +94,7 @@ public class ErrorBehaviorTest {
 
     @Test
     public void testGlobalIgnore() throws IOException, ParseException {
-        CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.IGNORE);
+        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.IGNORE);
         List<Action> actions = Arrays.asList(failureAction(), failureAction(), failureAction());
         ActionGroupRunner runner = new ActionGroupRunner("Global Ignore Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
@@ -102,11 +104,11 @@ public class ErrorBehaviorTest {
 
     @Test
     public void testActionIgnore() throws IOException, ParseException {
-        CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.HALT);
+        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
         Action fail1 = failureAction();
         Action fail2 = failureAction();
-        fail1.setErrorBehavior(CurlyApp.ErrorBehavior.IGNORE);
-        fail2.setErrorBehavior(CurlyApp.ErrorBehavior.IGNORE);
+        fail1.setErrorBehavior(ErrorBehavior.IGNORE);
+        fail2.setErrorBehavior(ErrorBehavior.IGNORE);
         List<Action> actions = Arrays.asList(fail1, fail2);
         ActionGroupRunner runner = new ActionGroupRunner("Action Ignore Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
@@ -116,11 +118,11 @@ public class ErrorBehaviorTest {
     
     @Test
     public void testActionRequireFailure() throws IOException, ParseException {
-        CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.HALT);
+        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
         Action fail1 = failureAction();
         Action fail2 = failureAction();
-        fail1.setErrorBehavior(CurlyApp.ErrorBehavior.SKIP_IF_SUCCESSFUL);
-        fail2.setErrorBehavior(CurlyApp.ErrorBehavior.SKIP_IF_SUCCESSFUL);
+        fail1.setErrorBehavior(ErrorBehavior.SKIP_IF_SUCCESSFUL);
+        fail2.setErrorBehavior(ErrorBehavior.SKIP_IF_SUCCESSFUL);
         List<Action> actions = Arrays.asList(fail1, fail2);
         ActionGroupRunner runner = new ActionGroupRunner("Action Require Failure Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
@@ -130,11 +132,11 @@ public class ErrorBehaviorTest {
 
     @Test
     public void testActionRequireFailure2() throws IOException, ParseException {
-        CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.HALT);
+        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
         Action fail1 = successAction();
         Action fail2 = failureAction();
-        fail1.setErrorBehavior(CurlyApp.ErrorBehavior.SKIP_IF_SUCCESSFUL);
-        fail2.setErrorBehavior(CurlyApp.ErrorBehavior.SKIP_IF_SUCCESSFUL);
+        fail1.setErrorBehavior(ErrorBehavior.SKIP_IF_SUCCESSFUL);
+        fail2.setErrorBehavior(ErrorBehavior.SKIP_IF_SUCCESSFUL);
         List<Action> actions = Arrays.asList(fail1, fail2);
         ActionGroupRunner runner = new ActionGroupRunner("Action Require Failure Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
@@ -144,7 +146,7 @@ public class ErrorBehaviorTest {
     
     @Test
     public void testHalt() throws IOException, ParseException {
-        CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.HALT);
+        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
         Action fail1 = failureAction();
         Action fail2 = failureAction();
         List<Action> actions = Arrays.asList(fail1, fail2);
@@ -160,7 +162,7 @@ public class ErrorBehaviorTest {
     public Action successAction() {
         Action successAction = new Action();
         successAction.setName("success "+(actionCounter++));
-        successAction.setResultType(Action.ResultType.plain);
+        successAction.setResultType(ResultType.PLAIN);
         successAction.setCommand("http://localhost:" + TestWebServer.IP_PORT + "/success");
         return successAction;
     }
@@ -168,7 +170,7 @@ public class ErrorBehaviorTest {
     public Action failureAction() {
         Action failureAction = new Action();
         failureAction.setName("failure "+(actionCounter++));
-        failureAction.setResultType(Action.ResultType.plain);
+        failureAction.setResultType(ResultType.PLAIN);
         failureAction.setCommand("http://localhost:" + TestWebServer.IP_PORT + "/failure");
         return failureAction;
     }

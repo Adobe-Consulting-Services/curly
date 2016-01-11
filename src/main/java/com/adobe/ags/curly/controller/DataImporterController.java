@@ -17,7 +17,8 @@ package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.CurlyApp;
 import static com.adobe.ags.curly.Messages.*;
-import com.adobe.ags.curly.model.Action;
+import com.adobe.ags.curly.model.ActionUtils;
+import com.adobe.ags.curly.xml.Action;
 import com.sun.javafx.collections.ObservableListWrapper;
 import java.io.BufferedReader;
 import java.io.File;
@@ -233,7 +234,7 @@ public class DataImporterController {
     
     private ComboBox<String> generateVariableSelector() {
         Set vars = new TreeSet<>();
-        actions.stream().map(Action::getVariableNames).forEach(vars::addAll);
+        actions.stream().map(action->ActionUtils.getVariableNames(action)).forEach(vars::addAll);
         ComboBox<String> box = new ComboBox<>();
         vars.add(DONT_USE);
         box.getItems().addAll(vars);

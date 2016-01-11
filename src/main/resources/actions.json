@@ -3,73 +3,73 @@
         "name": "Get references for image",
         "description": "Find all page that refer to a given image/asset in a jcr path.",
         "command": "-X GET ${server}/bin/querybuilder.json?path=${site|/content/mySite}&1_property=fileReference&1_property.value=${image|/content/dam/myImage}&p.limit=${limit|-1}",
-        "type":"json"
+        "resultType":"JSON"
     },
     {
         "name": "Find all pending Jobs",
         "description": "",
         "command": "${server}/bin/querybuilder.json?&path=/var/eventing/jobs&type=slingevent:Job&p.limit=-1&fulltext=/com/day/cq/replication/job&fulltext.relPath=@slingevent:topic&property.and=true&property=slingevent:finished&property.operation=not&orderby=slingevent:created&orderby.sort=asc",
-        "type":"json"
+        "resultType":"JSON"
     },
     {
         "name": "Find all Blocking Jobs",
         "description": "",
         "command": "${server}/bin/querybuilder.json?path=/var/eventing/jobs/anon&type=slingevent:Job&rangeproperty.property=event.job.retrycount&rangeproperty.lowerBound=1",
-        "type":"json"
+        "resultType":"JSON"
     },
     {
         "name": "Uninstall a bundle",
         "description": "",
         "command": "-daction=uninstall ${server}/system/console/bundles/\"${bundle}\"",
-        "type":"json"
+        "resultType":"JSON"
     },
     {
         "name": "Upload a package AND install",
         "description": "",
         "command": "-F file=@${file} -F name=${package name} -F force=${force|true} -F install=true ${server}/crx/packmgr/service.jsp",
-        "type":"fork"
+        "resultType":"HTML"
     },
     {
         "name": "Upload a package DO NOT install",
         "description": "",
         "command": "-F file=@${file} -F name=${package name} -F force=${force|true} -F install=false ${server}/crx/packmgr/service.jsp",
-        "type":"json"
+        "resultType":"JSON"
     },
     {
         "name": "Rebuild an existing package",
         "description": "",
         "command": "-F cmd=build ${server}/crx/packmgr/service/.json/etc/packages/${package file}",
-        "type":"json"
+        "resultType":"JSON"
     },
     {
         "name": "Install a package",
         "description": "",
         "command": "${server}/crx/packmgr/service/.json/etc/packages/export/${package file}?cmd=install",
-        "type":"json"
+        "resultType":"JSON"
     },
     {
         "name": "Delete a node and its descendents",
         "description": "USE WITH CAUTION!  This recursively deletes content",
         "command": "-X DELETE ${server}/${node path|/content/myNode}",
-        "type":"html"
+        "resultType":"HTML"
     },
     {
         "name": "Create a node",
         "description": "Create a new node at a specified JCR path",
         "command": "-F _charset_=utf-8 -F :nameHint=node -F jcr:primaryType=${primary type|nt:unstructured} -F sling:resourceType=${resource type|project-A/components/abc-definition} ${server}${jcr path|/content}/${node name|new node}/",
-        "type":"html"
+        "resultType":"HTML"
     },
     {
         "name": "Upload an asset/file",
         "description": "Create a new file at a specified JCR path",
         "command": "-T ${directory|/path/to/file}/${file name} ${server}${jcr path|/content/dam}/${file name|myimage.jpg}",
-        "type":"html"
+        "resultType":"HTML"
     },
     {
         "name": "Verify node exists",
         "description": "If node exists, the test passes.  If not, the test fails",
         "command": "${server}${node path}.json",
-        "type":"json"        
+        "resultType":"JSON"        
     },
     {
         "name": "Lock a page",
@@ -85,43 +85,43 @@
         "name": "Copy a node",
         "description": "",
         "command": "-F:operation=copy -F:dest=${destination path|/path/to/destination} -F:replace=${replace|true} ${server}${source path|/path/to/source}",
-        "type":"html"
+        "resultType":"HTML"
     },
     {
         "name": "Move a node",
         "description": "",
         "command": "-F:operation=move -F:dest=${destination path|/path/to/destination} ${server}${source path|/path/to/source}",
-        "type":"html"
+        "resultType":"HTML"
     },
     {
         "name": "Activate node/page",
         "description":"",
         "command":"-F path=${node path|/content/path/to/page} -F cmd=activate ${server}/bin/replicate.json",
-        "type":"html"
+        "resultType":"HTML"
     },
     {
         "name": "Deactivate node/page",
         "description":"",
         "command":"-F path=${node path|/content/path/to/page} -F cmd=deactivate ${server}/bin/replicate.json",
-        "type":"html"
+        "resultType":"HTML"
     },    
     {
         "name": "Activate tree",
         "description": "Warning: This is a recursive operation and performing this on large secions of the respository should only be done with caution!",
         "command": "-F cmd=activate -F ignoredeactivated=${ignore activated|true} -F onlymodified=${only modified|true} -F path=${node path} ${server}/etc/replication/treeactivation.json",
-        "type":"json"
+        "resultType":"JSON"
     },
     {
         "name": "Deactivate tree",
         "description": "Warning: This is a recursive operation and performing this on large secions of the respository should only be done with caution!",
         "command": "-F cmd=deactivate -F onlymodified=${only modified|true} -F path=${node path} ${server}/etc/replication/treeactivation.json",
-        "type":"json"
+        "resultType":"JSON"
     },
     {
         "name": "Start a workflow",
         "description": "Create a new running workflow instance with a specific payload",
         "command": "-F model=/etc/workflow/models/${workflow model|dam/update_asset}/jcr:content/model -F payload=${node path} -F payloadType=JCR_PATH -F workflowTitle=${workflow title|Curly-started workflow} ${server}/etc/workflow/instances",
-        "type":"json"
+        "resultType":"JSON"
     },
     {
         "name": "Create user",

@@ -18,6 +18,7 @@ package com.adobe.ags.curly.model;
 import com.adobe.ags.curly.CurlyApp;
 import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.controller.ActionRunner;
+import com.adobe.ags.curly.xml.ResultType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -95,7 +96,7 @@ public class ActionResult extends RunnerResult<RunnerResult> {
         setStatus(COMPLETED_UNSUCCESSFUL, -1, ex.getMessage());
     }
 
-    public void processHttpResponse(CloseableHttpResponse httpResponse, Action.ResultType resultType) throws IOException {
+    public void processHttpResponse(CloseableHttpResponse httpResponse, ResultType resultType) throws IOException {
         StatusLine status = httpResponse.getStatusLine();
         String statusKey = COMPLETED_SUCCESSFUL;
         boolean successfulResponseCode = false;
@@ -104,8 +105,8 @@ public class ActionResult extends RunnerResult<RunnerResult> {
         } else {
             statusKey = COMPLETED_UNSUCCESSFUL;
         }
-        if (resultType == Action.ResultType.html) {
-            ParsedResponseMessage message = extractHtmlMessage(httpResponse).orElse(UNKNOWN_RESPONSE);
+        if (resultType == ResultType.HTML) {
+            ParsedResponseMessage message = (ParsedResponseMessage) extractHtmlMessage(httpResponse).orElse(UNKNOWN_RESPONSE);
             if (message.type == RESULT_TYPE.FAIL) {
                 successfulResponseCode = false;
                 statusKey = COMPLETED_UNSUCCESSFUL;
@@ -117,7 +118,7 @@ public class ActionResult extends RunnerResult<RunnerResult> {
         percentSuccess().set(successfulResponseCode ? 1 : 0);
     }
 
-    private Optional<ParsedResponseMessage> extractHtmlMessage(CloseableHttpResponse httpResponse) throws IOException {
+    private Optional<Object> extractHtmlMessage(CloseableHttpResponse httpResponse) throws IOException {
         if (httpResponse == null || httpResponse.getEntity() == null) {
             return Optional.empty();
         }
@@ -127,7 +128,7 @@ public class ActionResult extends RunnerResult<RunnerResult> {
             responseMessage = lines.collect(Collectors.toList());
             lines = responseMessage.stream();
         }
-        return lines.map(line -> {
+        return lines.map((String line) -> {
             for (RESULT_TYPE resultType : RESULT_TYPE.values()) {
                 for (Pattern p : resultType.patterns) {
                     Matcher m = p.matcher(line);
@@ -136,7 +137,7 @@ public class ActionResult extends RunnerResult<RunnerResult> {
                     }
                 }
             }
-            return null;
+            return Optional.empty();
         }).filter(e -> e != null).findFirst();
     }
 

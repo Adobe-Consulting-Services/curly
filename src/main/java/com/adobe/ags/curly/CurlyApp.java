@@ -20,7 +20,8 @@ import com.adobe.ags.curly.controller.AppController;
 import com.adobe.ags.curly.controller.BatchRunner;
 import com.adobe.ags.curly.controller.DataImporterController;
 import com.adobe.ags.curly.controller.RunnerActivityController;
-import com.adobe.ags.curly.model.Action;
+import com.adobe.ags.curly.xml.Action;
+import com.adobe.ags.curly.xml.ErrorBehavior;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -41,12 +42,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import static javafx.application.Application.launch;
+import static javafx.application.Application.launch;
+import static javafx.application.Application.launch;
 
 public class CurlyApp extends Application {
 
-    public static enum ErrorBehavior {
-        IGNORE, SKIP, SKIP_IF_SUCCESSFUL, HALT, GLOBAL
-    };
     static CurlyApp singleton;
     static final String APPLICATION_TITLE = "applicationTitle";
     private AppController appController;

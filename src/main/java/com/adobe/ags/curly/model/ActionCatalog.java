@@ -15,6 +15,7 @@
  */
 package com.adobe.ags.curly.model;
 
+import com.adobe.ags.curly.xml.Action;
 import com.google.gson.Gson;
 import java.io.InputStream;
 import java.io.InputStreamReader;

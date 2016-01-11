@@ -18,7 +18,9 @@ package com.adobe.ags.curly.controller;
 import com.adobe.ags.curly.ConnectionManager;
 import com.adobe.ags.curly.CurlyApp;
 import static com.adobe.ags.curly.Messages.NO_DATA_LOADED;
-import com.adobe.ags.curly.model.Action;
+import com.adobe.ags.curly.model.ActionUtils;
+import com.adobe.ags.curly.xml.Action;
+import com.adobe.ags.curly.xml.ErrorBehavior;
 import com.sun.javafx.collections.ObservableListWrapper;
 import java.net.URL;
 import java.util.ArrayList;
@@ -115,17 +117,17 @@ public class AppController {
 
     @FXML
     void ignoreErrors(ActionEvent event) {
-        CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.IGNORE);
+        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.IGNORE);
     }
 
     @FXML
     void skipIfError(ActionEvent event) {
-        CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.SKIP);
+        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.SKIP);
     }
 
     @FXML
     void haltIfError(ActionEvent event) {
-        CurlyApp.getInstance().errorBehaviorProperty().set(CurlyApp.ErrorBehavior.HALT);
+        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
     }
 
     @FXML
@@ -191,7 +193,7 @@ public class AppController {
 
     private void buildVariableGrid(ListChangeListener.Change<? extends Action> change) {
         Map<String, String> variablesWithDefaults = new TreeMap<>();
-        change.getList().forEach((Action a) -> variablesWithDefaults.putAll(a.getVariablesWithDefaults()));
+        change.getList().forEach((Action a) -> variablesWithDefaults.putAll(ActionUtils.getVariablesWithDefaults(a)));
         defaults.keySet().retainAll(variablesWithDefaults.keySet());
 
         oneShotGrid.getChildren().clear();

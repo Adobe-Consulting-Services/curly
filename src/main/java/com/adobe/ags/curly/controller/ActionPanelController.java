@@ -16,14 +16,12 @@
 package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.CurlyApp;
-import com.adobe.ags.curly.CurlyApp.ErrorBehavior;
-import com.adobe.ags.curly.model.Action;
+import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.model.ActionCatalog;
+import com.adobe.ags.curly.xml.ErrorBehavior;
 import com.sun.javafx.collections.ObservableListWrapper;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -91,8 +89,8 @@ public class ActionPanelController {
 
         List<Action> actions = new ArrayList<>(ActionCatalog.getCatalog().values());
         predefinedCombobox.setItems(new ObservableListWrapper<>(actions));
-        predefinedCombobox.getSelectionModel().selectedItemProperty().addListener(
-                (ObservableValue<? extends Action> observable, Action oldValue, Action newValue) -> {
+        predefinedCombobox.setCellFactory((listView) -> new ActionListCell());
+        predefinedCombobox.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends Action> observable, Action oldValue, Action newValue) -> {
                     populateValues(observable.getValue(), false);
                 });
         errorBehaviorCombobox.getItems().addAll(ErrorBehavior.values());
