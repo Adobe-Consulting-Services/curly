@@ -29,7 +29,9 @@ limitations under the License.
             <menus>
                 <Menu mnemonicParsing="false" text="%file">
                     <items>
+                  <MenuItem mnemonicParsing="false" onAction="#openActionSequence" text="%openActionSequence" />
                         <MenuItem mnemonicParsing="false" onAction="#openDataSet" text="%openDataSet" />
+                  <MenuItem mnemonicParsing="false" onAction="#saveActionSequence" text="%saveActionSequence" />
                     </items>
                 </Menu>
             <Menu mnemonicParsing="false" text="%options">

@@ -17,7 +17,18 @@ limitations under the License.
 
 <xs:schema version="1.0"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+           jaxb:extensionBindingPrefixes="xjc"
+           jaxb:version="1.0"
            elementFormDefault="qualified">
+    <xs:annotation>
+        <xs:appinfo>
+            <jaxb:globalBindings generateIsSetMethod="true">
+                <xjc:serializable uid="51276170111"/>
+            </jaxb:globalBindings>
+        </xs:appinfo>
+    </xs:annotation>
     <xs:simpleType name="errorBehavior">
         <xs:restriction base="xs:string">
             <xs:enumeration value="ignore"/>

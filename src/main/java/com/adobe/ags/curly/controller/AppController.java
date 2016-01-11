@@ -22,6 +22,7 @@ import com.adobe.ags.curly.model.ActionUtils;
 import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.xml.ErrorBehavior;
 import com.sun.javafx.collections.ObservableListWrapper;
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
 
 public class AppController {
 
@@ -149,6 +151,28 @@ public class AppController {
         CurlyApp.getInstance().openActivityMonitor(runner);
     }
 
+    @FXML
+    void openActionSequence(ActionEvent event) {
+        FileChooser openChooser = new FileChooser();
+        openChooser.setTitle(CurlyApp.getMessage("openActionSequence"));
+        File sourceFile = openChooser.showOpenDialog(null);
+        if (sourceFile != null) {
+            List<Action> actions = ActionUtils.readFromFile(sourceFile);
+            actionList.getItems().clear();
+            actionList.getItems().addAll(actions);
+        }
+    }
+
+    @FXML
+    void saveActionSequence(ActionEvent event) {
+        FileChooser openChooser = new FileChooser();
+        openChooser.setTitle(CurlyApp.getMessage("saveActionSequence"));
+        File targetFile = openChooser.showSaveDialog(null);
+        if (targetFile != null) {
+            ActionUtils.saveToFile(targetFile, actionList.getItems());
+        }
+    }    
+    
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         assert connectionTab != null : "fx:id=\"connectionTab\" was not injected: check your FXML file 'App.fxml'.";

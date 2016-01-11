@@ -16,12 +16,17 @@
 package com.adobe.ags.curly.model;
 
 import com.adobe.ags.curly.xml.Action;
+import com.adobe.ags.curly.xml.Actions;
+import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.collections.ObservableList;
+import javax.xml.bind.JAXB;
 
 public class ActionUtils {
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(.*?)\\}");
@@ -57,5 +62,16 @@ public class ActionUtils {
             }
         }
         return variableDefaults;
+    }
+
+    public static List<Action> readFromFile(File sourceFile) {
+        Actions parsedActions = JAXB.unmarshal(sourceFile, Actions.class);
+        return parsedActions.getAction();
+    }
+
+    public static void saveToFile(File targetFile, List<Action> actions) {
+        Actions out = new Actions();
+        out.getAction().addAll(actions);
+        JAXB.marshal(out, targetFile);
     }
 }
