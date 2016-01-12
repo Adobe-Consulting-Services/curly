@@ -11,3 +11,5 @@ More information about Curly is available in the wiki:
 + [Basic Usage](https://github.com/badvision/curly/wiki/How-to-Use-Curly)
 + [Batch Processing](https://github.com/badvision/curly/wiki/Batch-Processing)
 + [Reporting](https://github.com/badvision/curly/wiki/Reporting)
+
+ignore: travis test
