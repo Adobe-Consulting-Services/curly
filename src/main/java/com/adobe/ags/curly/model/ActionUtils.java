@@ -77,6 +77,18 @@ public class ActionUtils {
         out.getAction().addAll(actions);
         JAXB.marshal(out, targetFile);
     }
+    
+    public static List<Action> getFavoriteList() {
+        if (favorites == null) {
+            File favoritesFile = getFavoritesFile();
+            if (!favoritesFile.exists()) {
+                favorites = new ArrayList<>();
+            } else {
+                favorites = readFromFile(favoritesFile);
+            }
+        }
+        return favorites;
+    }    
 
     public static boolean isFavorite(Action item) {
         return isFavorite(item.getName());
@@ -100,25 +112,9 @@ public class ActionUtils {
 
     private static List<Action> favorites;
 
-    private static List<Action> getFavoriteList() {
-        if (favorites == null) {
-            File favoritesFile = getFavoritesFile();
-            if (!favoritesFile.exists()) {
-                favorites = new ArrayList<>();
-            } else {
-                Actions favList = JAXB.unmarshal(favoritesFile, Actions.class);
-                favorites = favList.getAction();
-            }
-        }
-        return favorites;
-    }
-
     private static void persistFavorites() {
         if (favorites != null) {
-            File out = getFavoritesFile();
-            Actions favList = new Actions();
-            favList.getAction().addAll(favorites);
-            JAXB.marshal(favList, out);
+            saveToFile(getFavoritesFile(), favorites);
         }
     }
 

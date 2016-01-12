@@ -24,8 +24,7 @@ import com.adobe.ags.curly.xml.ErrorBehavior;
 import com.sun.javafx.collections.ObservableListWrapper;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
+import java.util.stream.Collectors;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -59,7 +58,7 @@ public class ActionPanelController {
 
     @FXML // fx:id="favoritesButton"
     private Button favoritesButton;
-    
+
     @FXML // fx:id="predefinedCombobox"
     private ComboBox<ErrorBehavior> errorBehaviorCombobox; // Value injected by FXMLLoader
 
@@ -73,7 +72,7 @@ public class ActionPanelController {
         if (ActionUtils.isFavorite(source)) {
             ActionUtils.removeFavorite(actionNameField.getText());
         } else {
-            updateSourceObject();        
+            updateSourceObject();
             ActionUtils.addFavorite(source);
         }
         updateFavoriteButton(null, null, actionNameField.getText());
@@ -100,13 +99,18 @@ public class ActionPanelController {
         assert descriptionField != null : "fx:id=\"descriptionField\" was not injected: check your FXML file 'ActionPanel.fxml'.";
         assert curlField != null : "fx:id=\"curlField\" was not injected: check your FXML file 'ActionPanel.fxml'.";
 
-        List<Action> actions = new ArrayList<>(ActionCatalog.getCatalog().values());
+        List<Action> actions = new ArrayList<>();
+        actions.addAll(ActionUtils.getFavoriteList());
+        actions.addAll(
+                ActionCatalog.getCatalog().values().stream()
+                .filter(action -> !ActionUtils.isFavorite(action)).collect(Collectors.toList()));
         predefinedCombobox.setItems(new ObservableListWrapper<>(actions));
         predefinedCombobox.setButtonCell(new ActionListCell());
         predefinedCombobox.setCellFactory((listView) -> new ActionListCell());
-        predefinedCombobox.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends Action> observable, Action oldValue, Action newValue) -> {
-            populateValues(observable.getValue(), false);
-        });
+        predefinedCombobox.getSelectionModel().selectedItemProperty().addListener(
+                (ObservableValue<? extends Action> observable, Action oldValue, Action newValue) -> {
+                    populateValues(observable.getValue(), false);
+                });
         errorBehaviorCombobox.getItems().addAll(ErrorBehavior.values());
         errorBehaviorCombobox.setConverter(new StringConverter<ErrorBehavior>() {
             @Override
@@ -128,11 +132,11 @@ public class ActionPanelController {
         if (isFavorite) {
             favoritesButton.setText(CurlyApp.getMessage(Messages.REMOVE_FAVORITE));
         } else {
-            favoritesButton.setText(CurlyApp.getMessage(Messages.ADD_FAVORITE));            
+            favoritesButton.setText(CurlyApp.getMessage(Messages.ADD_FAVORITE));
         }
         predefinedCombobox.setButtonCell(new ActionListCell());
     }
-    
+
     public void populateValues(Action source, boolean retainAsSource) {
         if (source != null) {
             if (retainAsSource) {
