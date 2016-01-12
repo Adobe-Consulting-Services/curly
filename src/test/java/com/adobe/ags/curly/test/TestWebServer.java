@@ -78,6 +78,8 @@ public class TestWebServer {
     }
     
     public void shutdown() {
-        server.shutdown(1, TimeUnit.SECONDS);
+        if (server != null) {   
+            server.shutdown(1, TimeUnit.SECONDS);
+        }
     }
 }

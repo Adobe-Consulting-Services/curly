@@ -66,7 +66,9 @@ public class ErrorBehaviorTest {
     @AfterClass
     public static void tearDownClass() {
         ConnectionManager.getInstance().shutdown();
-        webserver.shutdown();
+        if (webserver != null) {
+            webserver.shutdown();
+        }
     }
 
     @Before
