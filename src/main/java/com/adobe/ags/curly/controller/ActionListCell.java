@@ -16,10 +16,13 @@
 package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.model.ActionUtils;
 import com.adobe.ags.curly.xml.Action;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
@@ -93,6 +96,11 @@ public class ActionListCell extends ListCell<Action> {
             if (item.getDescription() != null && !(item.getDescription().isEmpty())) {
                 setTooltip(new Tooltip(item.getDescription()));
             }
+            if (ActionUtils.isFavorite(item)) {
+                setGraphic(getFavoriteIcon());
+            } else {
+                setGraphic(null);
+            }
         }
     }
 
@@ -105,5 +113,9 @@ public class ActionListCell extends ListCell<Action> {
         getListView().getItems().add(dummy);
         getListView().getItems().remove(dummy);
     }
-    
+
+    static Image favoriteIcon = new Image(ActionListCell.class.getClassLoader().getResourceAsStream("images/favorite.png"));
+    private ImageView getFavoriteIcon() {
+        return new ImageView(favoriteIcon);
+    }
 }

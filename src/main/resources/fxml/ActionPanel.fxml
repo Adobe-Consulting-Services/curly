@@ -70,7 +70,7 @@ limitations under the License.
          <right>
             <HBox spacing="11.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button mnemonicParsing="false" onAction="#favoriteActionPerformed" text="%addFavorite" />
+                  <Button fx:id="favoritesButton" mnemonicParsing="false" onAction="#favoriteActionPerformed" text="%addFavorite" />
                   <Button mnemonicParsing="false" onAction="#okActionPerformed" text="%ok" />
                   <Button mnemonicParsing="false" onAction="#cancelActionPerformed" text="%cancel" />
                </children>

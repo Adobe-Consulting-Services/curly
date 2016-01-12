@@ -18,6 +18,7 @@ package com.adobe.ags.curly.model;
 import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.xml.Actions;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,10 +26,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javafx.collections.ObservableList;
 import javax.xml.bind.JAXB;
 
 public class ActionUtils {
+
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(.*?)\\}");
 
     public static Set<String> getVariableNames(Action action) {
@@ -73,5 +76,61 @@ public class ActionUtils {
         Actions out = new Actions();
         out.getAction().addAll(actions);
         JAXB.marshal(out, targetFile);
+    }
+
+    public static boolean isFavorite(Action item) {
+        return isFavorite(item.getName());
+    }
+
+    public static boolean isFavorite(String name) {
+        return name != null
+                && !name.isEmpty()
+                && getFavoriteList().stream().anyMatch(action -> action.getName().equalsIgnoreCase(name));
+    }
+
+    public static void addFavorite(Action item) {
+        removeFavorite(item.getName(), false);
+        favorites.add(item);
+        persistFavorites();
+    }
+
+    public static void removeFavorite(String name) {
+        removeFavorite(name, true);
+    }
+
+    private static List<Action> favorites;
+
+    private static List<Action> getFavoriteList() {
+        if (favorites == null) {
+            File favoritesFile = getFavoritesFile();
+            if (!favoritesFile.exists()) {
+                favorites = new ArrayList<>();
+            } else {
+                Actions favList = JAXB.unmarshal(favoritesFile, Actions.class);
+                favorites = favList.getAction();
+            }
+        }
+        return favorites;
+    }
+
+    private static void persistFavorites() {
+        if (favorites != null) {
+            File out = getFavoritesFile();
+            Actions favList = new Actions();
+            favList.getAction().addAll(favorites);
+            JAXB.marshal(favList, out);
+        }
+    }
+
+    private static File getFavoritesFile() {
+        return new File(System.getProperty("user.dir"), ".curly_favorites.xml");
+    }
+
+    private static void removeFavorite(String name, boolean persist) {
+        getFavoriteList();
+        favorites = favorites.stream().filter(action -> !action.getName().equalsIgnoreCase(name)).collect(Collectors.toList());
+        if (persist) {
+            persistFavorites();
+        }
     }
 }

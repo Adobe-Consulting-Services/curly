@@ -18,6 +18,7 @@ package com.adobe.ags.curly;
 public class Messages {
 
     public static final String ACTIVITY_TERMINATED = "activityTerminated";
+    public static final String ADD_FAVORITE = "addFavorite";
     public static final String ATTEMPTING_CONNECTION = "attemptingConnection";
     public static final String CHOOSE_TEXT_OR_EXCEL = "chooseTextOrExcel";
     public static final String COMPLETED_SUCCESSFUL = "completedSuccessful";
@@ -31,6 +32,7 @@ public class Messages {
     public static final String MISSING_NVP_HEADER_ERROR = "missingNameValuePairHeader";
     public static final String NO_DATA_LOADED = "noDataLoaded";
     public static final String NOT_STARTED = "notStarted";
+    public static final String REMOVE_FAVORITE = "removeFavorite";
     public static final String STOP = "stop";
     public static final String UNKNOWN_METHOD_ERROR = "unknownMethodError";
     public static final String UNKNOWN_PARAMETER = "unknownParameter";
