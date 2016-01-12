@@ -15,7 +15,7 @@
  */
 package com.adobe.ags.curly.controller;
 
-import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.ApplicationState;
 import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.model.BatchRunnerResult;
 import com.adobe.ags.curly.model.RunnerResult;
@@ -94,14 +94,14 @@ public class RunnerActivityController {
                     .when(currentTask.getResult().completed())
                     .then(
                             Bindings.when(currentTask.getResult().completelySuccessful())
-                            .then(CurlyApp.getMessage(COMPLETED_SUCCESSFUL))
-                            .otherwise(CurlyApp.getMessage(COMPLETED_UNSUCCESSFUL))
+                            .then(ApplicationState.getMessage(COMPLETED_SUCCESSFUL))
+                            .otherwise(ApplicationState.getMessage(COMPLETED_UNSUCCESSFUL))
                     )
-                    .otherwise(CurlyApp.getMessage(INCOMPLETE)));
-            goStopButton.setText(CurlyApp.getMessage(STOP));
+                    .otherwise(ApplicationState.getMessage(INCOMPLETE)));
+            goStopButton.setText(ApplicationState.getMessage(STOP));
             goStopButton.visibleProperty().bind(Bindings.not(currentTask.getResult().completed()));
         } else {
-            CurlyApp.getInstance().runningProperty().set(false);
+            ApplicationState.getInstance().runningProperty().set(false);
             goStopButton.disableProperty();
             if (runnerThread != null && runnerThread.isAlive()) {
                 runnerThread.interrupt();
@@ -151,7 +151,7 @@ public class RunnerActivityController {
         reportStyle.setConverter(new StringConverter<RunnerActivityController.ReportStyle>() {
             @Override
             public String toString(ReportStyle style) {
-                return CurlyApp.getMessage(style.toString().toLowerCase());
+                return ApplicationState.getMessage(style.toString().toLowerCase());
             }
 
             @Override
