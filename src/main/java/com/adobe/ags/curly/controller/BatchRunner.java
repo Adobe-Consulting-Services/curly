@@ -15,7 +15,7 @@
  */
 package com.adobe.ags.curly.controller;
 
-import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.ApplicationState;
 import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.model.BatchRunnerResult;
 import com.adobe.ags.curly.model.RunnerResult;
@@ -60,7 +60,7 @@ public class BatchRunner implements TaskRunner {
     @Override
     public void run() {
         try {
-            CurlyApp.getInstance().runningProperty().set(true);
+            ApplicationState.getInstance().runningProperty().set(true);
             executor = new ThreadPoolExecutor(concurrency, concurrency, 1, TimeUnit.DAYS, tasks);
             executor.allowCoreThreadTimeOut(true);
             result.start();

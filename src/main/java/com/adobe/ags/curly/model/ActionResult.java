@@ -15,7 +15,7 @@
  */
 package com.adobe.ags.curly.model;
 
-import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.ApplicationState;
 import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.controller.ActionRunner;
 import com.adobe.ags.curly.xml.ResultType;
@@ -71,7 +71,8 @@ public class ActionResult extends RunnerResult<RunnerResult> {
     ActionRunner runner;
     Exception failureCause = null;
     List<String> responseMessage;
-    private final static ParsedResponseMessage UNKNOWN_RESPONSE = new ParsedResponseMessage(RESULT_TYPE.WARN, CurlyApp.getMessage(COULD_NOT_DETECT_RESPONSE_STATUS));
+    private final static ParsedResponseMessage UNKNOWN_RESPONSE = 
+            new ParsedResponseMessage(RESULT_TYPE.WARN, ApplicationState.getMessage(COULD_NOT_DETECT_RESPONSE_STATUS));
 
     public ActionResult(ActionRunner runner) {
         this.runner = runner;
@@ -84,7 +85,7 @@ public class ActionResult extends RunnerResult<RunnerResult> {
 
     private void setStatus(String key, int responseCode, String statusMessage) {
         Platform.runLater(() -> {
-            ((StringProperty) reportRow().get(1)).set(CurlyApp.getMessage(key));
+            ((StringProperty) reportRow().get(1)).set(ApplicationState.getMessage(key));
             ((IntegerProperty) reportRow().get(2)).set(responseCode);
             ((StringProperty) reportRow().get(3)).set(statusMessage);
         });

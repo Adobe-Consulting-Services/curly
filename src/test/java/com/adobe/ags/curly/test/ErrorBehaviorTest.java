@@ -15,13 +15,14 @@
  */
 package com.adobe.ags.curly.test;
 
+import com.adobe.ags.curly.ApplicationState;
 import com.adobe.ags.curly.ConnectionManager;
-import com.adobe.ags.curly.CurlyApp;
 import com.adobe.ags.curly.controller.ActionGroupRunner;
 import com.adobe.ags.curly.controller.AuthHandler;
 import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.xml.ErrorBehavior;
 import com.adobe.ags.curly.xml.ResultType;
+import com.sun.javafx.application.PlatformImpl;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -55,7 +56,9 @@ public class ErrorBehaviorTest {
 
     @BeforeClass
     public static void setUpClass() throws IOException, InterruptedException {
-        new JFXPanel(); // Initializes the JavaFx Platform
+        new Thread(()->{
+            PlatformImpl.startup(() -> {});            
+        }).start();
         webserver = new TestWebServer();
         webserver.requireLogin = true;
     }
@@ -68,7 +71,7 @@ public class ErrorBehaviorTest {
 
     @Before
     public void setUp() {
-        CurlyApp.getInstance().runningProperty().set(true);
+        ApplicationState.getInstance().runningProperty().set(true);
         handler = new AuthHandler(
                 new ReadOnlyStringWrapper("localhost:" + TestWebServer.IP_PORT),
                 new ReadOnlyBooleanWrapper(false),
@@ -94,7 +97,7 @@ public class ErrorBehaviorTest {
 
     @Test
     public void testGlobalIgnore() throws IOException, ParseException {
-        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.IGNORE);
+        ApplicationState.getInstance().errorBehaviorProperty().set(ErrorBehavior.IGNORE);
         List<Action> actions = Arrays.asList(failureAction(), failureAction(), failureAction());
         ActionGroupRunner runner = new ActionGroupRunner("Global Ignore Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
@@ -104,7 +107,7 @@ public class ErrorBehaviorTest {
 
     @Test
     public void testActionIgnore() throws IOException, ParseException {
-        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
+        ApplicationState.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
         Action fail1 = failureAction();
         Action fail2 = failureAction();
         fail1.setErrorBehavior(ErrorBehavior.IGNORE);
@@ -118,7 +121,7 @@ public class ErrorBehaviorTest {
     
     @Test
     public void testActionRequireFailure() throws IOException, ParseException {
-        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
+        ApplicationState.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
         Action fail1 = failureAction();
         Action fail2 = failureAction();
         fail1.setErrorBehavior(ErrorBehavior.SKIP_IF_SUCCESSFUL);
@@ -132,7 +135,7 @@ public class ErrorBehaviorTest {
 
     @Test
     public void testActionRequireFailure2() throws IOException, ParseException {
-        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
+        ApplicationState.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
         Action fail1 = successAction();
         Action fail2 = failureAction();
         fail1.setErrorBehavior(ErrorBehavior.SKIP_IF_SUCCESSFUL);
@@ -146,7 +149,7 @@ public class ErrorBehaviorTest {
     
     @Test
     public void testHalt() throws IOException, ParseException {
-        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
+        ApplicationState.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
         Action fail1 = failureAction();
         Action fail2 = failureAction();
         List<Action> actions = Arrays.asList(fail1, fail2);
@@ -154,7 +157,7 @@ public class ErrorBehaviorTest {
         runner.run();
         assertFalse(runner.getResult().completelySuccessful().get());
         assertFalse(runner.getResult().completed().get());
-        assertFalse(CurlyApp.getInstance().runningProperty().get());
+        assertFalse(ApplicationState.getInstance().runningProperty().get());
     }    
     
     private int actionCounter = 0;

@@ -15,7 +15,7 @@
  */
 package com.adobe.ags.curly.controller;
 
-import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.ApplicationState;
 import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.model.ActionGroupRunnerResult;
 import com.adobe.ags.curly.model.ActionResult;
@@ -80,7 +80,7 @@ public class ActionGroupRunner implements TaskRunner {
     @Override
     public void run() {
         actions.keySet().forEach((Action action) -> {
-            if (!CurlyApp.getInstance().runningProperty().get() || skipTheRest.get()) {
+            if (!ApplicationState.getInstance().runningProperty().get() || skipTheRest.get()) {
                 return;
             }
             ActionRunner runner = actions.get(action);
@@ -114,13 +114,13 @@ public class ActionGroupRunner implements TaskRunner {
     private void handleError() {
         ErrorBehavior behavior;
         if (lastAction == null || lastAction.getErrorBehavior() == ErrorBehavior.GLOBAL) {
-            behavior = CurlyApp.getInstance().errorBehaviorProperty().get();
+            behavior = ApplicationState.getInstance().errorBehaviorProperty().get();
         } else {
             behavior = lastAction.getErrorBehavior();
         }
         switch (behavior) {
             case HALT:
-                CurlyApp.getInstance().runningProperty().set(false);
+                ApplicationState.getInstance().runningProperty().set(false);
                 break;
             case SKIP:
                 skipTheRest.set(true);

@@ -21,7 +21,6 @@ import com.adobe.ags.curly.controller.BatchRunner;
 import com.adobe.ags.curly.controller.DataImporterController;
 import com.adobe.ags.curly.controller.RunnerActivityController;
 import com.adobe.ags.curly.xml.Action;
-import com.adobe.ags.curly.xml.ErrorBehavior;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -31,64 +30,31 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
-import static javafx.application.Application.launch;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import static javafx.application.Application.launch;
-import static javafx.application.Application.launch;
-import static javafx.application.Application.launch;
 
 public class CurlyApp extends Application {
 
-    static CurlyApp singleton;
     static final String APPLICATION_TITLE = "applicationTitle";
-    private AppController appController;
-    private final BooleanProperty isRunning = new SimpleBooleanProperty(false);
-    private final ObjectProperty<ErrorBehavior> errorBehavior = new SimpleObjectProperty<>(ErrorBehavior.IGNORE);
-    private ResourceBundle i18n;
+    private static AppController appController;
+    private static Stage applicationWindow;
 
-    public static CurlyApp getInstance() {
-        if (singleton == null) {
-            singleton = new CurlyApp();
-        }
-        return singleton;
-    }
-
-    private Stage applicationWindow;
-
-    public BooleanProperty runningProperty() {
-        return isRunning;
-    }
-
-    public ObjectProperty<ErrorBehavior> errorBehaviorProperty() {
-        return errorBehavior;
-    }
-
-    public static String getMessage(String key) {
-        if (singleton == null || singleton.i18n == null) {
-            return key;
-        } else {
-            return singleton.i18n.getString(key);
-        }
-    }
-
-    public Action editAction(Action source, Runnable persistHandler) {
+    public static Action editAction(Action source, Runnable persistHandler) {
         final BooleanProperty okPressed = new SimpleBooleanProperty(false);
         if (source == null) {
             source = new Action();
         }
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ActionPanel.fxml"));
-            loader.setResources(i18n);
+            FXMLLoader loader = new FXMLLoader(CurlyApp.class.getResource("/fxml/ActionPanel.fxml"));
+            loader.setResources(ApplicationState.getInstance().getResourceBundle());
             loader.load();
             ActionPanelController actionController = loader.getController();
 
@@ -117,10 +83,10 @@ public class CurlyApp extends Application {
         }
     }
 
-    public void importWizard(Consumer<List<Map<String, String>>> handler) {
+    public static void importWizard(Consumer<List<Map<String, String>>> handler) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/DataImporter.fxml"));
-            loader.setResources(i18n);
+            FXMLLoader loader = new FXMLLoader(CurlyApp.class.getResource("/fxml/DataImporter.fxml"));
+            loader.setResources(ApplicationState.getInstance().getResourceBundle());
             loader.load();
             DataImporterController importController = loader.getController();
 
@@ -139,10 +105,10 @@ public class CurlyApp extends Application {
         }
     }
 
-    public void openActivityMonitor(BatchRunner runner) {
+    public static void openActivityMonitor(BatchRunner runner) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RunnerReport.fxml"));
-            loader.setResources(i18n);
+            FXMLLoader loader = new FXMLLoader(CurlyApp.class.getResource("/fxml/RunnerReport.fxml"));
+            loader.setResources(ApplicationState.getInstance().getResourceBundle());
             loader.load();
             RunnerActivityController runnerActivityController = loader.getController();
 
@@ -161,12 +127,11 @@ public class CurlyApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        singleton = this;
         applicationWindow = stage;
         Locale locale = Locale.getDefault();
-        i18n = ResourceBundle.getBundle("Bundle", locale);
+        ApplicationState.getInstance().setResourceBundle(ResourceBundle.getBundle("Bundle", locale));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/App.fxml"));
-        loader.setResources(i18n);
+        loader.setResources(ApplicationState.getInstance().getResourceBundle());
         loader.load();
         Parent root = loader.getRoot();
         appController = loader.getController();
@@ -174,7 +139,7 @@ public class CurlyApp extends Application {
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
 
-        stage.setTitle(i18n.getString(APPLICATION_TITLE));
+        stage.setTitle(ApplicationState.getInstance().getResourceBundle().getString(APPLICATION_TITLE));
         stage.setScene(scene);
         stage.show();
 

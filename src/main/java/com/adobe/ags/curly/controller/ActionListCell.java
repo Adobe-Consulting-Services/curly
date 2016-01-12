@@ -106,7 +106,7 @@ public class ActionListCell extends ListCell<Action> {
 
     @Override
     public void startEdit() {
-        CurlyApp.getInstance().editAction(getItem(), null);
+        CurlyApp.editAction(getItem(), null);
         cancelEdit();
         updateItem(getItem(), false);
         Action dummy = new Action();

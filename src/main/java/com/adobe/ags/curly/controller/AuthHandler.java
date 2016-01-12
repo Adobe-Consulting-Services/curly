@@ -15,8 +15,8 @@
  */
 package com.adobe.ags.curly.controller;
 
+import com.adobe.ags.curly.ApplicationState;
 import com.adobe.ags.curly.ConnectionManager;
-import com.adobe.ags.curly.CurlyApp;
 import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.model.Login;
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class AuthHandler {
         model.userNameProperty().addListener(this::triggerLoginTest);
         model.passwordProperty().addListener(this::triggerLoginTest);
 
-        model.statusMessageProperty().set(CurlyApp.getMessage(INCOMPLETE_FIELDS));
+        model.statusMessageProperty().set(ApplicationState.getMessage(INCOMPLETE_FIELDS));
         model.loginConfirmedProperty().set(false);
 
     }
@@ -109,7 +109,7 @@ public class AuthHandler {
             if (!model.requiredFieldsPresentProperty().get()) {
                 Platform.runLater(()->{
                     model.loginConfirmedProperty().set(false);
-                    model.statusMessageProperty().set(CurlyApp.getMessage(INCOMPLETE_FIELDS));
+                    model.statusMessageProperty().set(ApplicationState.getMessage(INCOMPLETE_FIELDS));
                 });
                 return;
             }
@@ -123,7 +123,7 @@ public class AuthHandler {
             
             Platform.runLater(()->{
                 model.loginConfirmedProperty().set(false);
-                model.statusMessageProperty().set(CurlyApp.getMessage(ATTEMPTING_CONNECTION));            
+                model.statusMessageProperty().set(ApplicationState.getMessage(ATTEMPTING_CONNECTION));            
             });
             client = getAuthenticatedClient();
             HttpGet loginTest = new HttpGet(url);
@@ -133,24 +133,24 @@ public class AuthHandler {
             if (responseStatus.getStatusCode() >= 200 && responseStatus.getStatusCode() < 300) {
                 Platform.runLater(()->{
                     model.loginConfirmedProperty().set(true);
-                    model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_SUCCESSFUL));
+                    model.statusMessageProperty().set(ApplicationState.getMessage(CONNECTION_SUCCESSFUL));
                 });
             } else {
                 Platform.runLater(()->{
                     model.loginConfirmedProperty().set(false);
-                    model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_ERROR) + responseStatus.getReasonPhrase() + " (" + responseStatus.getStatusCode() + ")");
+                    model.statusMessageProperty().set(ApplicationState.getMessage(CONNECTION_ERROR) + responseStatus.getReasonPhrase() + " (" + responseStatus.getStatusCode() + ")");
                 });
             }
         } catch (MalformedURLException | IllegalArgumentException | UnknownHostException ex) {
             Logger.getLogger(AuthHandler.class.getName()).log(Level.SEVERE, null, ex);
             Platform.runLater(()->{
-                model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_ERROR) + ex.getMessage());
+                model.statusMessageProperty().set(ApplicationState.getMessage(CONNECTION_ERROR) + ex.getMessage());
                 model.loginConfirmedProperty().set(false);
             });
         } catch (Throwable ex) {
             Logger.getLogger(AuthHandler.class.getName()).log(Level.SEVERE, null, ex);
             Platform.runLater(()->{
-                model.statusMessageProperty().set(CurlyApp.getMessage(CONNECTION_ERROR) + ex.getMessage());
+                model.statusMessageProperty().set(ApplicationState.getMessage(CONNECTION_ERROR) + ex.getMessage());
                 model.loginConfirmedProperty().set(false);
             });
         } finally {

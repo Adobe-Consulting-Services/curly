@@ -15,6 +15,7 @@
  */
 package com.adobe.ags.curly.controller;
 
+import com.adobe.ags.curly.ApplicationState;
 import com.adobe.ags.curly.ConnectionManager;
 import com.adobe.ags.curly.CurlyApp;
 import static com.adobe.ags.curly.Messages.NO_DATA_LOADED;
@@ -106,7 +107,7 @@ public class AppController {
 
     @FXML
     void addActionClicked(ActionEvent event) {
-        Action action = CurlyApp.getInstance().editAction(new Action(), null);
+        Action action = CurlyApp.editAction(new Action(), null);
         if (action != null) {
             actionList.getItems().add(action);
         }
@@ -119,22 +120,22 @@ public class AppController {
 
     @FXML
     void ignoreErrors(ActionEvent event) {
-        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.IGNORE);
+        ApplicationState.getInstance().errorBehaviorProperty().set(ErrorBehavior.IGNORE);
     }
 
     @FXML
     void skipIfError(ActionEvent event) {
-        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.SKIP);
+        ApplicationState.getInstance().errorBehaviorProperty().set(ErrorBehavior.SKIP);
     }
 
     @FXML
     void haltIfError(ActionEvent event) {
-        CurlyApp.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
+        ApplicationState.getInstance().errorBehaviorProperty().set(ErrorBehavior.HALT);
     }
 
     @FXML
     void openDataSet(ActionEvent event) {
-        CurlyApp.getInstance().importWizard(this::loadData);
+        CurlyApp.importWizard(this::loadData);
     }
 
     @FXML
@@ -142,19 +143,19 @@ public class AppController {
         List<Map<String, String>> blankRow = new ArrayList<>();
         blankRow.add(new HashMap<>());
         BatchRunner runner = new BatchRunner(loginHandler, concurencyChoice.getValue(), getActions(), blankRow, defaults, defaults.keySet());
-        CurlyApp.getInstance().openActivityMonitor(runner);
+        CurlyApp.openActivityMonitor(runner);
     }
 
     @FXML
     void batchStartClicked(ActionEvent event) {
         BatchRunner runner = new BatchRunner(loginHandler, concurencyChoice.getValue(), getActions(), batchDataTable.getItems(), defaults, defaults.keySet());
-        CurlyApp.getInstance().openActivityMonitor(runner);
+        CurlyApp.openActivityMonitor(runner);
     }
 
     @FXML
     void openActionSequence(ActionEvent event) {
         FileChooser openChooser = new FileChooser();
-        openChooser.setTitle(CurlyApp.getMessage("openActionSequence"));
+        openChooser.setTitle(ApplicationState.getMessage("openActionSequence"));
         File sourceFile = openChooser.showOpenDialog(null);
         if (sourceFile != null) {
             List<Action> actions = ActionUtils.readFromFile(sourceFile);
@@ -166,7 +167,7 @@ public class AppController {
     @FXML
     void saveActionSequence(ActionEvent event) {
         FileChooser openChooser = new FileChooser();
-        openChooser.setTitle(CurlyApp.getMessage("saveActionSequence"));
+        openChooser.setTitle(ApplicationState.getMessage("saveActionSequence"));
         File targetFile = openChooser.showSaveDialog(null);
         if (targetFile != null) {
             ActionUtils.saveToFile(targetFile, actionList.getItems());
@@ -208,7 +209,7 @@ public class AppController {
                 -> ConnectionManager.getInstance().setPoolSize(newValue.getSelectedItem()));
         Platform.runLater(() -> concurencyChoice.getSelectionModel().selectFirst());
 
-        batchDataTable.setPlaceholder(new Label(CurlyApp.getMessage(NO_DATA_LOADED)));
+        batchDataTable.setPlaceholder(new Label(ApplicationState.getMessage(NO_DATA_LOADED)));
     }
 
     private void updateConnectionTabStyle() {

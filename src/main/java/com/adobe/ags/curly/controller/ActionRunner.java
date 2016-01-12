@@ -15,7 +15,7 @@
  */
 package com.adobe.ags.curly.controller;
 
-import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.ApplicationState;
 import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.model.ActionUtils;
 import com.adobe.ags.curly.xml.Action;
@@ -91,8 +91,8 @@ public class ActionRunner implements Runnable {
 
     @Override
     public void run() {
-        if (!CurlyApp.getInstance().runningProperty().get()) {
-            response.setException(new Exception(CurlyApp.getMessage(ACTIVITY_TERMINATED)));
+        if (!ApplicationState.getInstance().runningProperty().get()) {
+            response.setException(new Exception(ApplicationState.getMessage(ACTIVITY_TERMINATED)));
             return;
         }
         response.updateProgress(0.5);
@@ -127,7 +127,7 @@ public class ActionRunner implements Runnable {
                     ((HttpPut)request).setEntity(new FileEntity(new File(putFile)));
                     break;
                 default:
-                    throw new UnsupportedOperationException(CurlyApp.getMessage(UNSUPPORTED_METHOD_ERROR) + ": " + httpMethod.name());
+                    throw new UnsupportedOperationException(ApplicationState.getMessage(UNSUPPORTED_METHOD_ERROR) + ": " + httpMethod.name());
             }
 
             addHeaders(request);
@@ -210,7 +210,7 @@ public class ActionRunner implements Runnable {
                     parseCmdParam(part.charAt(1), part.substring(2), offset);
                 }
             } else {
-                throw new ParseException(CurlyApp.getMessage(UNKNOWN_PARAMETER) + ": " + part, offset);
+                throw new ParseException(ApplicationState.getMessage(UNKNOWN_PARAMETER) + ": " + part, offset);
             }
             offset += part.length() + 1;
         }
@@ -271,7 +271,7 @@ public class ActionRunner implements Runnable {
                     }
                     vars.get(fieldName).add(value);
                 } else {
-                    throw new ParseException(CurlyApp.getMessage(MISSING_NVP_FORM_ERROR), offset + 1);
+                    throw new ParseException(ApplicationState.getMessage(MISSING_NVP_FORM_ERROR), offset + 1);
                 }
                 return true;
             case 'T':
@@ -283,13 +283,13 @@ public class ActionRunner implements Runnable {
                 try {
                     httpMethod = HttpMethod.valueOf(param.toUpperCase());
                 } catch (IllegalArgumentException ex) {
-                    throw new ParseException(CurlyApp.getMessage(UNKNOWN_METHOD_ERROR) + " " + param, offset + 1);
+                    throw new ParseException(ApplicationState.getMessage(UNKNOWN_METHOD_ERROR) + " " + param, offset + 1);
                 }
                 return true;
             case 'h':
                 String[] nvp = param.split(":\\s*");
                 if (nvp.length != 2) {
-                    throw new ParseException(CurlyApp.getMessage(MISSING_NVP_HEADER_ERROR), offset + 1);
+                    throw new ParseException(ApplicationState.getMessage(MISSING_NVP_HEADER_ERROR), offset + 1);
                 }
                 requestHeaders.put(detokenizeParameters(nvp[0]), detokenizeParameters(nvp[1]));
                 return true;
@@ -308,7 +308,7 @@ public class ActionRunner implements Runnable {
                 //ignored no-parameter flags
                 return false;
             default:
-                throw new ParseException(CurlyApp.getMessage(UNKNOWN_PARAMETER) + ": " + command, offset);
+                throw new ParseException(ApplicationState.getMessage(UNKNOWN_PARAMETER) + ": " + command, offset);
         }
     }
 

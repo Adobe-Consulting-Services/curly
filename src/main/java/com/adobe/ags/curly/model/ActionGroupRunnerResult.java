@@ -15,7 +15,7 @@
  */
 package com.adobe.ags.curly.model;
 
-import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.ApplicationState;
 import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.xml.Action;
 import java.util.List;
@@ -37,10 +37,12 @@ public class ActionGroupRunnerResult extends RunnerResult<ActionResult> {
 
     private void buildRow(Map<String, String> variables, Set<String> reportColumns) {
         StringBinding successOrNot = Bindings.when(completelySuccessful())
-                .then(CurlyApp.getMessage(COMPLETED_SUCCESSFUL))
-                .otherwise(CurlyApp.getMessage(COMPLETED_UNSUCCESSFUL));
+                .then(ApplicationState.getMessage(COMPLETED_SUCCESSFUL))
+                .otherwise(ApplicationState.getMessage(COMPLETED_UNSUCCESSFUL));
         reportRow().add(new ReadOnlyStringWrapper(task));
-        reportRow().add(Bindings.when(Bindings.greaterThanOrEqual(percentComplete(), 1)).then(successOrNot).otherwise(CurlyApp.getMessage(INCOMPLETE)));
+        reportRow().add(Bindings.when(Bindings.greaterThanOrEqual(percentComplete(), 1))
+                .then(successOrNot)
+                .otherwise(ApplicationState.getMessage(INCOMPLETE)));
         reportRow().add(Bindings.createStringBinding(()->
                 String.format("%.0f%%",100.0*percentComplete().get()),percentComplete()));
         reportColumns.forEach((colName) -> reportRow().add(new SimpleStringProperty(variables.get(colName))));

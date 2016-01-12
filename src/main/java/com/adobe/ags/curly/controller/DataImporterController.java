@@ -15,7 +15,7 @@
  */
 package com.adobe.ags.curly.controller;
 
-import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.ApplicationState;
 import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.model.ActionUtils;
 import com.adobe.ags.curly.xml.Action;
@@ -77,7 +77,7 @@ public class DataImporterController {
     @FXML
     void chooseFile(ActionEvent event) {
         FileChooser openFileDialog = new FileChooser();
-        openFileDialog.setTitle(CurlyApp.getMessage(CHOOSE_TEXT_OR_EXCEL));
+        openFileDialog.setTitle(ApplicationState.getMessage(CHOOSE_TEXT_OR_EXCEL));
         File selected = openFileDialog.showOpenDialog(null);
         if (selected != null && selected.exists() && selected.isFile()) {
             openFile(selected);
@@ -129,7 +129,7 @@ public class DataImporterController {
         skipFirstSelection.setItems(new ObservableListWrapper<>(zeroThroughTen));
         Platform.runLater(()->skipFirstSelection.getSelectionModel().selectFirst());
         
-        contentTable.setPlaceholder(new Label(CurlyApp.getMessage(NO_DATA_LOADED)));
+        contentTable.setPlaceholder(new Label(ApplicationState.getMessage(NO_DATA_LOADED)));
     }
 
     private void openFile(File file) {

@@ -15,7 +15,7 @@
  */
 package com.adobe.ags.curly.model;
 
-import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.ApplicationState;
 import static com.adobe.ags.curly.Messages.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
@@ -34,10 +34,10 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
         reportRow().add(new ReadOnlyStringWrapper("Batch run"));
         
         StringBinding successOrNot = Bindings.when(completelySuccessful())
-                .then(CurlyApp.getMessage(COMPLETED_SUCCESSFUL))
-                .otherwise(CurlyApp.getMessage(COMPLETED_UNSUCCESSFUL));
+                .then(ApplicationState.getMessage(COMPLETED_SUCCESSFUL))
+                .otherwise(ApplicationState.getMessage(COMPLETED_UNSUCCESSFUL));
         reportRow().add(Bindings.when(completed())
-                .then(successOrNot).otherwise(CurlyApp.getMessage(INCOMPLETE)));
+                .then(successOrNot).otherwise(ApplicationState.getMessage(INCOMPLETE)));
 
         reportRow().add(Bindings.createStringBinding(()->
                 String.format("%.0f%%",100.0*percentComplete().get()),percentComplete()));

@@ -15,7 +15,7 @@
  */
 package com.adobe.ags.curly.controller;
 
-import com.adobe.ags.curly.CurlyApp;
+import com.adobe.ags.curly.ApplicationState;
 import com.adobe.ags.curly.Messages;
 import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.model.ActionCatalog;
@@ -115,7 +115,7 @@ public class ActionPanelController {
         errorBehaviorCombobox.setConverter(new StringConverter<ErrorBehavior>() {
             @Override
             public String toString(ErrorBehavior object) {
-                return CurlyApp.getMessage("errorBehavior_" + object.name());
+                return ApplicationState.getMessage("errorBehavior_" + object.name());
             }
 
             @Override
@@ -130,9 +130,9 @@ public class ActionPanelController {
     public void updateFavoriteButton(ObservableValue nameProperty, String oldName, String newName) {
         boolean isFavorite = ActionUtils.isFavorite(newName);
         if (isFavorite) {
-            favoritesButton.setText(CurlyApp.getMessage(Messages.REMOVE_FAVORITE));
+            favoritesButton.setText(ApplicationState.getMessage(Messages.REMOVE_FAVORITE));
         } else {
-            favoritesButton.setText(CurlyApp.getMessage(Messages.ADD_FAVORITE));
+            favoritesButton.setText(ApplicationState.getMessage(Messages.ADD_FAVORITE));
         }
         predefinedCombobox.setButtonCell(new ActionListCell());
     }
