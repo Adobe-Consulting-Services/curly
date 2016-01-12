@@ -34,7 +34,7 @@ import org.apache.http.protocol.HttpContext;
  * @author brobert
  */
 public class TestWebServer {
-    public static int IP_PORT = (int) ((Math.random() * 30000.0) + 49152);
+    public static int IP_PORT = (int) ((Math.random() * 5000.0) + 49152);
     HttpServer server;
     String responseMessage = "This is a sample response";
     HttpRequest lastRequest;
