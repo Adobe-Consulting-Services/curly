@@ -12,4 +12,5 @@ More information about Curly is available in the wiki:
 + [Batch Processing](https://github.com/badvision/curly/wiki/Batch-Processing)
 + [Reporting](https://github.com/badvision/curly/wiki/Reporting)
 
-ignore: travis test
+## Download
+The first release candidate for 2.0 has been added and can be [Downloaded here](https://github.com/badvision/curly/releases/tag/2.0-rc1).
