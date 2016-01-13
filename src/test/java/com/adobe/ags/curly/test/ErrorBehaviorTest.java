@@ -178,6 +178,8 @@ public class ErrorBehaviorTest {
 
     private void assertResults(RunnerResult result, boolean completelySuccessful, boolean completed) {
         try {
+            result.completelySuccessful().get();
+            result.completed().get();
             if (completelySuccessful) {
                 assertTrue(result.completelySuccessful().get());
             } else {
