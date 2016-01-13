@@ -60,7 +60,7 @@ public class ErrorBehaviorTest {
     public static void setUpClass() throws IOException, InterruptedException {
         new ToolkitApplicationLauncher().init();
         new JFXPanel();
-        webserver = new TestWebServer();
+        webserver = TestWebServer.getServer();
         webserver.requireLogin = true;
     }
 

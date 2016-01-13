@@ -40,7 +40,16 @@ public class TestWebServer {
     HttpRequest lastRequest;
     long processingDelay = 0;
     boolean requireLogin = true;
-    public TestWebServer() throws IOException, InterruptedException {
+    
+    static private TestWebServer instance;
+    static public TestWebServer getServer() throws IOException, InterruptedException {
+        if (instance == null) {
+            instance = new TestWebServer();
+        }
+        return instance;
+    }
+    
+    private TestWebServer() throws IOException, InterruptedException {
         ServerBootstrap bootstrap = ServerBootstrap.bootstrap();
         bootstrap.setListenerPort(IP_PORT);
         bootstrap.setServerInfo("Test/1.1");

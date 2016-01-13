@@ -45,7 +45,7 @@ public class ConnectionManagerTest {
     
     @BeforeClass
     public static void setUpClass() throws IOException, InterruptedException {
-        webserver = new TestWebServer();
+        webserver = TestWebServer.getServer();
     }
     
     @AfterClass
