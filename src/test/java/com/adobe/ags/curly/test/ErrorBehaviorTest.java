@@ -28,6 +28,8 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.embed.swing.JFXPanel;
@@ -56,9 +58,8 @@ public class ErrorBehaviorTest {
 
     @BeforeClass
     public static void setUpClass() throws IOException, InterruptedException {
-        new Thread(()->{
-            PlatformImpl.startup(() -> {});            
-        }).start();
+        new ToolkitApplicationLauncher().init();
+        new JFXPanel();
         webserver = new TestWebServer();
         webserver.requireLogin = true;
     }
@@ -69,6 +70,7 @@ public class ErrorBehaviorTest {
         if (webserver != null) {
             webserver.shutdown();
         }
+        Platform.exit();
     }
 
     @Before
