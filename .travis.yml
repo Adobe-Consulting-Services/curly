@@ -1,9 +1,15 @@
-## Travis-CI settings
 language: java
 jdk:
-    - oraclejdk8
+- oraclejdk8
 sudo: true
 addons:
   apt:
     packages:
-      - net-tools
+    - net-tools
+deploy:
+  provider: releases
+  api_key:
+    secure: H+t8e45VZWqrBIImUhj/2G06krMk/3Ptyye7uj090Ej6IdSBGKFQkGJCFQZvYhAtT6aScFbpbZWzvLw2X2uvygK8BSN1WiIYT9K3IT3If5wz0c3ioCRTYgLjayaTDBJWgkS7IEMdB69Bbp3asBAMEzGhZEvy15cjv6/6D3maTvLrkfy5dlu59v3lo+CuMs1SO2T87GO9UEsCZShNI8BfsyBkxYsbjczan+qrw7C82sAiVP53wvaB7aS70kksnOmWal2fwt6LYH8NotTDDSKuk6TBg/iSUNv13Gj5v1RSFKHr8MTjwlQCMcYG8L8++ZjrQ3U0kT9ZP9JiH2Or71GcVF6MKhWN0gMY1QAv8DIMv840O5MqxntVQAZm4a7wbvGTkNQ+ITyBSnLToCELNw0ozLhftEj9zp4qcKhq99nTIufDFv7QOxhWu5ddEcLanwyml4ehD9L5FYOXQNJtkFwOMRcBE5/bXgMkqvZp4i/kJXVtcwwLHJ0hAqNz7J0oG/vkggd19l5O/vbWgK1PFUq3sRElTRp0oAE5lxcFUEYDlDvSqCdEMASnrLlRCmzEmMN3ofD5r7E6QZNqNhbeyG311M2LHkQITUVhGC1yiC3qmHHjX5AYmErUtRADCBNYeN4dlGpkFzdkAp9lby9DpJ02r536+cWXEPh7A7U2SZOINx4=
+  file: target/Curly-2.0-SNAPSHOT.jar
+  on:
+    repo: badvision/curly
