@@ -47,6 +47,7 @@ public class TestWebServer {
 
     static public TestWebServer getServer() throws IOException, InterruptedException {
         if (instance == null) {
+            IP_PORT++;
             instance = new TestWebServer();
         }
         instance.usageCounter.incrementAndGet();
@@ -96,6 +97,7 @@ public class TestWebServer {
             if (server != null) {
                 server.shutdown(1, TimeUnit.SECONDS);
             }
+            instance = null;
         }
     }
 }
