@@ -22,13 +22,11 @@ import com.adobe.ags.curly.controller.AuthHandler;
 import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.xml.ErrorBehavior;
 import com.adobe.ags.curly.xml.ResultType;
-import com.sun.javafx.application.PlatformImpl;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -77,7 +75,7 @@ public class ErrorBehaviorTest {
     public void setUp() {
         ApplicationState.getInstance().runningProperty().set(true);
         handler = new AuthHandler(
-                new ReadOnlyStringWrapper("localhost:" + TestWebServer.IP_PORT),
+                new ReadOnlyStringWrapper("localhost:" + webserver.port),
                 new ReadOnlyBooleanWrapper(false),
                 new ReadOnlyStringWrapper(TEST_USER),
                 new ReadOnlyStringWrapper(TEST_PASSWORD)
@@ -170,7 +168,7 @@ public class ErrorBehaviorTest {
         Action successAction = new Action();
         successAction.setName("success "+(actionCounter++));
         successAction.setResultType(ResultType.PLAIN);
-        successAction.setCommand("http://localhost:" + TestWebServer.IP_PORT + "/success");
+        successAction.setCommand("http://localhost:" + webserver.port + "/success");
         return successAction;
     }
     
@@ -178,7 +176,7 @@ public class ErrorBehaviorTest {
         Action failureAction = new Action();
         failureAction.setName("failure "+(actionCounter++));
         failureAction.setResultType(ResultType.PLAIN);
-        failureAction.setCommand("http://localhost:" + TestWebServer.IP_PORT + "/failure");
+        failureAction.setCommand("http://localhost:" + webserver.port + "/failure");
         return failureAction;
     }
 }

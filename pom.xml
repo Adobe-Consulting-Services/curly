@@ -119,7 +119,7 @@
                     <additionalClasspathElements>
                         <additionalClasspathElement>${java.home}/lib/jfxrt.jar</additionalClasspathElement>
                     </additionalClasspathElements>
-                    <argLine>-Dglass.platform=Monocle -Djavafx.monocle.headless=true  -Dprism.order=sw -Dprism.verbose=true</argLine>
+                    <argLine>-Dglass.platform=Monocle -Djavafx.monocle.headless=true  -Dprism.order=sw</argLine>
                 </configuration>
             </plugin>
         </plugins>

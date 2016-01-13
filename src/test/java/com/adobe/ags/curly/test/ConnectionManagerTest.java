@@ -66,14 +66,14 @@ public class ConnectionManagerTest {
     public void getAuthenticatedConnection() throws IOException {
         webserver.requireLogin = true;
         AuthHandler handler = new AuthHandler(
-                new ReadOnlyStringWrapper("localhost:"+TestWebServer.IP_PORT), 
+                new ReadOnlyStringWrapper("localhost:"+webserver.port), 
                 new ReadOnlyBooleanWrapper(false), 
                 new ReadOnlyStringWrapper(TEST_USER), 
                 new ReadOnlyStringWrapper(TEST_PASSWORD)
         );
         CloseableHttpClient client = handler.getAuthenticatedClient();
         assertNotNull(client);
-        HttpUriRequest request = new HttpGet("http://localhost:"+TestWebServer.IP_PORT+"/testUri");
+        HttpUriRequest request = new HttpGet("http://localhost:"+webserver.port+"/testUri");
         client.execute(request);
         Header authHeader = webserver.lastRequest.getFirstHeader("Authorization");
         assertNotNull(authHeader);

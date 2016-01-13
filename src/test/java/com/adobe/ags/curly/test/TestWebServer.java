@@ -35,29 +35,22 @@ import org.apache.http.protocol.HttpContext;
  */
 public class TestWebServer {
 
-    public static int IP_PORT = (int) ((Math.random() * 5000.0) + 49152);
+    private static int IP_PORT = (int) ((Math.random() * 5000.0) + 49152);
     HttpServer server;
     String responseMessage = "This is a sample response";
     HttpRequest lastRequest;
     long processingDelay = 0;
     boolean requireLogin = true;
-    AtomicInteger usageCounter = new AtomicInteger();
-
-    static private TestWebServer instance;
+    int port;
 
     static public TestWebServer getServer() throws IOException, InterruptedException {
-        if (instance == null) {
-            IP_PORT++;
-            instance = new TestWebServer();
-        }
-        instance.usageCounter.incrementAndGet();
-        return instance;
+        return new TestWebServer(IP_PORT++);
     }
 
-    private TestWebServer() throws IOException, InterruptedException {
-
+    private TestWebServer(int port) throws IOException, InterruptedException {
+        this.port=port;
         ServerBootstrap bootstrap = ServerBootstrap.bootstrap();
-        bootstrap.setListenerPort(IP_PORT);
+        bootstrap.setListenerPort(port);
         bootstrap.setServerInfo("Test/1.1");
         bootstrap.setSocketConfig(SocketConfig.DEFAULT);
         bootstrap.registerHandler("*", this::handleHttpRequest);
@@ -93,11 +86,8 @@ public class TestWebServer {
     }
 
     public void shutdown() {
-        if (usageCounter.decrementAndGet() == 0) {
-            if (server != null) {
-                server.shutdown(1, TimeUnit.SECONDS);
-            }
-            instance = null;
+        if (server != null) {
+            server.shutdown(1, TimeUnit.SECONDS);
         }
     }
 }
