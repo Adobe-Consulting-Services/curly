@@ -19,6 +19,7 @@ import com.adobe.ags.curly.ApplicationState;
 import com.adobe.ags.curly.ConnectionManager;
 import com.adobe.ags.curly.controller.ActionGroupRunner;
 import com.adobe.ags.curly.controller.AuthHandler;
+import com.adobe.ags.curly.model.RunnerResult;
 import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.xml.ErrorBehavior;
 import com.adobe.ags.curly.xml.ResultType;
@@ -94,12 +95,7 @@ public class ErrorBehaviorTest {
         List<Action> actions = Arrays.asList(successAction(), successAction(), successAction(), successAction(), successAction());
         ActionGroupRunner runner = new ActionGroupRunner("Happy Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
-        if (runner.getResult() != null && runner.getResult().completelySuccessful() != null && runner.getResult().completed() != null) {
-            assertTrue(runner.getResult().completelySuccessful().get());
-            assertTrue(runner.getResult().completed().get());
-        } else {
-            Logger.getLogger(ErrorBehaviorTest.class.getName()).warning("Completed and Completely succcessful properties shouldn't be null");
-        }
+        assertResults(runner.getResult(), true, true);
     }
 
     @Test
@@ -108,12 +104,7 @@ public class ErrorBehaviorTest {
         List<Action> actions = Arrays.asList(failureAction(), failureAction(), failureAction());
         ActionGroupRunner runner = new ActionGroupRunner("Global Ignore Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
-        if (runner.getResult() != null && runner.getResult().completelySuccessful() != null && runner.getResult().completed() != null) {
-            assertFalse(runner.getResult().completelySuccessful().get());
-            assertTrue(runner.getResult().completed().get());
-        } else {
-            Logger.getLogger(ErrorBehaviorTest.class.getName()).warning("Completed and Completely succcessful properties shouldn't be null");
-        }
+        assertResults(runner.getResult(), false, true);
     }
 
     @Test
@@ -126,12 +117,7 @@ public class ErrorBehaviorTest {
         List<Action> actions = Arrays.asList(fail1, fail2);
         ActionGroupRunner runner = new ActionGroupRunner("Action Ignore Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
-        if (runner.getResult() != null && runner.getResult().completelySuccessful() != null && runner.getResult().completed() != null) {
-            assertFalse(runner.getResult().completelySuccessful().get());
-            assertTrue(runner.getResult().completed().get());
-        } else {
-            Logger.getLogger(ErrorBehaviorTest.class.getName()).warning("Completed and Completely succcessful properties shouldn't be null");
-        }
+        assertResults(runner.getResult(), false, true);
     }
 
     @Test
@@ -144,12 +130,7 @@ public class ErrorBehaviorTest {
         List<Action> actions = Arrays.asList(fail1, fail2);
         ActionGroupRunner runner = new ActionGroupRunner("Action Require Failure Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
-        if (runner.getResult() != null && runner.getResult().completelySuccessful() != null && runner.getResult().completed() != null) {
-            assertFalse(runner.getResult().completelySuccessful().get());
-            assertTrue(runner.getResult().completed().get());
-        } else {
-            Logger.getLogger(ErrorBehaviorTest.class.getName()).warning("Completed and Completely succcessful properties shouldn't be null");
-        }
+        assertResults(runner.getResult(), false, true);
     }
 
     @Test
@@ -162,12 +143,7 @@ public class ErrorBehaviorTest {
         List<Action> actions = Arrays.asList(fail1, fail2);
         ActionGroupRunner runner = new ActionGroupRunner("Action Require Failure Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
-        if (runner.getResult() != null && runner.getResult().completelySuccessful() != null && runner.getResult().completed() != null) {
-            assertFalse(runner.getResult().completelySuccessful().get());
-            assertFalse(runner.getResult().completed().get());
-        } else {
-            Logger.getLogger(ErrorBehaviorTest.class.getName()).warning("Completed and Completely succcessful properties shouldn't be null");
-        }
+        assertResults(runner.getResult(), false, false);
     }
 
     @Test
@@ -178,12 +154,7 @@ public class ErrorBehaviorTest {
         List<Action> actions = Arrays.asList(fail1, fail2);
         ActionGroupRunner runner = new ActionGroupRunner("Action Halt Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
-        if (runner.getResult() != null && runner.getResult().completelySuccessful() != null && runner.getResult().completed() != null) {
-            assertFalse(runner.getResult().completelySuccessful().get());
-            assertFalse(runner.getResult().completed().get());
-        } else {
-            Logger.getLogger(ErrorBehaviorTest.class.getName()).warning("Completed and Completely succcessful properties shouldn't be null");
-        }
+        assertResults(runner.getResult(), false, false);
         assertFalse(ApplicationState.getInstance().runningProperty().get());
     }
 
@@ -204,4 +175,23 @@ public class ErrorBehaviorTest {
         failureAction.setCommand("http://localhost:" + webserver.port + "/failure");
         return failureAction;
     }
+
+    private void assertResults(RunnerResult result, boolean completelySuccessful, boolean completed) {
+        try {
+            if (completelySuccessful) {
+                assertTrue(result.completelySuccessful().get());
+            } else {
+                assertFalse(result.completelySuccessful().get());
+            }
+
+            if (completed) {
+                assertTrue(result.completed().get());
+            } else {
+                assertFalse(result.completed().get());
+            }
+        } catch (NullPointerException ex) {
+            Logger.getLogger(ErrorBehaviorTest.class.getName()).warning("Completed and Completely succcessful properties shouldn't be null");
+        }
+    }
+
 }
