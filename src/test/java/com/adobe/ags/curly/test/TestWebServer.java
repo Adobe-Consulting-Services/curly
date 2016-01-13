@@ -18,6 +18,7 @@ package com.adobe.ags.curly.test;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.http.HttpRequest;
@@ -28,28 +29,32 @@ import org.apache.http.impl.bootstrap.HttpServer;
 import org.apache.http.impl.bootstrap.ServerBootstrap;
 import org.apache.http.protocol.HttpContext;
 
-
 /**
  *
  * @author brobert
  */
 public class TestWebServer {
+
     public static int IP_PORT = (int) ((Math.random() * 5000.0) + 49152);
     HttpServer server;
     String responseMessage = "This is a sample response";
     HttpRequest lastRequest;
     long processingDelay = 0;
     boolean requireLogin = true;
-    
+    AtomicInteger usageCounter = new AtomicInteger();
+
     static private TestWebServer instance;
+
     static public TestWebServer getServer() throws IOException, InterruptedException {
         if (instance == null) {
             instance = new TestWebServer();
         }
+        instance.usageCounter.incrementAndGet();
         return instance;
     }
-    
+
     private TestWebServer() throws IOException, InterruptedException {
+
         ServerBootstrap bootstrap = ServerBootstrap.bootstrap();
         bootstrap.setListenerPort(IP_PORT);
         bootstrap.setServerInfo("Test/1.1");
@@ -58,15 +63,15 @@ public class TestWebServer {
         server = bootstrap.create();
         server.start();
     }
-    
+
     public void setResponseDelay(long delayInMillis) {
         processingDelay = delayInMillis;
     }
-    
+
     public void setResponseMessage(String message) {
         responseMessage = message;
     }
-        
+
     void handleHttpRequest(HttpRequest request, HttpResponse response, HttpContext context) throws UnsupportedEncodingException {
         lastRequest = request;
         try {
@@ -85,10 +90,12 @@ public class TestWebServer {
             Logger.getLogger(TestWebServer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public void shutdown() {
-        if (server != null) {   
-            server.shutdown(1, TimeUnit.SECONDS);
+        if (usageCounter.decrementAndGet() == 0) {
+            if (server != null) {
+                server.shutdown(1, TimeUnit.SECONDS);
+            }
         }
     }
 }
