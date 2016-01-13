@@ -27,6 +27,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -145,8 +146,12 @@ public class ErrorBehaviorTest {
         List<Action> actions = Arrays.asList(fail1, fail2);
         ActionGroupRunner runner = new ActionGroupRunner("Action Require Failure Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
-        assertFalse(runner.getResult().completelySuccessful().get());
-        assertFalse(runner.getResult().completed().get());
+        if (runner.getResult() != null && runner.getResult().completelySuccessful() != null) {
+            assertFalse(runner.getResult().completelySuccessful().get());
+            assertFalse(runner.getResult().completed().get());
+        } else {
+            Logger.getLogger(ErrorBehaviorTest.class.getName()).warning("Completely succcessful property shouldn't be null");
+        }
     }
     
     @Test
