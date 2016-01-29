@@ -45,6 +45,7 @@ public class ActionGroupRunnerResult extends RunnerResult<ActionResult> {
                 .otherwise(ApplicationState.getMessage(INCOMPLETE)));
         reportRow().add(Bindings.createStringBinding(()->
                 String.format("%.0f%%",100.0*percentComplete().get()),percentComplete()));
+        reportRow().add(getDuration());
         reportColumns.forEach((colName) -> reportRow().add(new SimpleStringProperty(variables.get(colName))));
     }
     

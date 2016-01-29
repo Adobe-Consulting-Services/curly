@@ -95,6 +95,7 @@ public class ActionRunner implements Runnable {
             response.setException(new Exception(ApplicationState.getMessage(ACTIVITY_TERMINATED)));
             return;
         }
+        response.started().set(true);
         response.updateProgress(0.5);
 
         if (action.getDelay() > 0) {

@@ -80,6 +80,7 @@ public class ActionResult extends RunnerResult<RunnerResult> {
         reportRow().add(new SimpleStringProperty(""));
         reportRow().add(new SimpleIntegerProperty(0));
         reportRow().add(new SimpleStringProperty(""));
+        reportRow().add(getDuration());
         setStatus(NOT_STARTED, 0, "");
     }
 

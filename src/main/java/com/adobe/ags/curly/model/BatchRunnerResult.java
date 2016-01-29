@@ -28,7 +28,6 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
 
     LongProperty timeEllapsed = new SimpleLongProperty(0);
     LongProperty timeRemaining = new SimpleLongProperty(0);
-    Long startTime = 0L;
 
     public BatchRunnerResult() {
         reportRow().add(new ReadOnlyStringWrapper("Batch run"));
@@ -41,14 +40,16 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
 
         reportRow().add(Bindings.createStringBinding(()->
                 String.format("%.0f%%",100.0*percentComplete().get()),percentComplete()));
+        reportRow().add(getDuration());
     }
 
     public void start() {
-        startTime = System.currentTimeMillis();
+        started().set(true);
         percentComplete().addListener(this::updateEstimates);
     }
 
     public void stop() {
+        endTime().set(System.currentTimeMillis());
         timeEllapsed.unbind();
         timeRemaining.set(0);
         percentComplete().removeListener(this::updateEstimates);
@@ -56,7 +57,7 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
 
     private void updateEstimates(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
         Long now = System.currentTimeMillis();
-        Long ellapsed = now - startTime;
+        Long ellapsed = now - startTime().get();
         timeEllapsed.set(ellapsed);
         long totalTime = (long) ((double) ellapsed / percentComplete().get());
         timeRemaining.set(totalTime - ellapsed);

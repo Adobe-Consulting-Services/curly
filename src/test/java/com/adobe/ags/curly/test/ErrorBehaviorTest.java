@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.embed.swing.JFXPanel;
@@ -178,22 +179,23 @@ public class ErrorBehaviorTest {
 
     private void assertResults(RunnerResult result, boolean completelySuccessful, boolean completed) {
         try {
-            result.completelySuccessful().get();
-            result.completed().get();
             if (completelySuccessful) {
-                assertTrue(result.completelySuccessful().get());
+                assertTrue(isBindingTrue(result.completelySuccessful()));
             } else {
-                assertFalse(result.completelySuccessful().get());
+                assertFalse(isBindingTrue(result.completelySuccessful()));
             }
 
             if (completed) {
-                assertTrue(result.completed().get());
+                assertTrue(isBindingTrue(result.completed()));
             } else {
-                assertFalse(result.completed().get());
+                assertFalse(isBindingTrue(result.completed()));
             }
         } catch (NullPointerException ex) {
             Logger.getLogger(ErrorBehaviorTest.class.getName()).warning("Completed and Completely succcessful properties shouldn't be null");
         }
     }
 
+    private boolean isBindingTrue(BooleanBinding binding) {
+        return binding != null && binding.getValue() != null && binding.get();
+    }
 }

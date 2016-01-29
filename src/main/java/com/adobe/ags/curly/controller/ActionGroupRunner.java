@@ -79,6 +79,11 @@ public class ActionGroupRunner implements TaskRunner {
     
     @Override
     public void run() {
+        getResult().started().set(true);
+        actions.keySet().forEach((Action action) -> {
+            ActionRunner runner = actions.get(action);
+            results.addDetail(runner.response);            
+        });
         actions.keySet().forEach((Action action) -> {
             if (!ApplicationState.getInstance().runningProperty().get() || skipTheRest.get()) {
                 return;
@@ -92,15 +97,12 @@ public class ActionGroupRunner implements TaskRunner {
                 } else if (action.getErrorBehavior() == ErrorBehavior.SKIP_IF_SUCCESSFUL) {
                     skipTheRest.set(true);
                 }
-
-                response = runner.response;
             } catch (Exception ex) {
                 Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
                 response = new ActionResult(runner);
                 response.setException(ex);
                 handleError();
             }
-            results.addDetail(response);
         });
         try {
             if (client != null) {
