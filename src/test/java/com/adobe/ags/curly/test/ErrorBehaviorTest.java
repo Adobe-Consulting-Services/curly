@@ -179,6 +179,9 @@ public class ErrorBehaviorTest {
 
     private void assertResults(RunnerResult result, boolean completelySuccessful, boolean completed) {
         try {
+            // Headless JFX sometimes throws NPE when evaluating these, not sure why.
+            result.completed();
+            result.completelySuccessful();
             if (completelySuccessful) {
                 assertTrue(isBindingTrue(result.completelySuccessful()));
             } else {
