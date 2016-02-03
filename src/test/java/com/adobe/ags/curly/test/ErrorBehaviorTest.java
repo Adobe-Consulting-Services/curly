@@ -180,9 +180,8 @@ public class ErrorBehaviorTest {
     private void assertResults(RunnerResult result, boolean completelySuccessful, boolean completed) {
         try {
             // Headless JFX sometimes throws NPE when evaluating these, not sure why.
-            if (result.completed() == null || result.completelySuccessful() == null) {
-                return;
-            }
+            isBindingTrue(result.completed());
+            isBindingTrue(result.completelySuccessful());
             if (completelySuccessful) {
                 assertTrue(isBindingTrue(result.completelySuccessful()));
             } else {
