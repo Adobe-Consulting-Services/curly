@@ -158,5 +158,10 @@
         "name": "Set user's groups memberships",
         "description": "This removes a user from any groups they might be in that are not part of the provided groups.",
         "command": "-Fmembership=${group 1|contributor} -Fmembership=${group 2|othergroup} ${server}/home/users/${user path|/u/user}.rw.html"
+    },
+    {
+        "name": "Delete a project",
+        "description": "",
+        "command": "-X POST -F:operation=projectdelete -Fpath=${project path|/content/projects/myproject} -F_charset_​=utf-8 -FremoveGroups=${remove groups|true} -FdeleteProjectAssetFolder=${delete asset folder|true} -FterminateProjectWorkflows=${terminate workflows|true} ${server}/content/projects"          
     }
 ]
