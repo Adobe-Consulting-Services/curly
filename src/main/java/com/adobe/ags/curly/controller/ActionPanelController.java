@@ -145,6 +145,9 @@ public class ActionPanelController {
             actionNameField.setText(source.getName());
             descriptionField.setText(source.getDescription());
             curlField.setText(source.getCommand());
+            if (source.getDelay() > 0) {
+                delayField.setText(Long.toString(source.getDelay()));
+            }
         } else {
             this.source = new Action();
         }
