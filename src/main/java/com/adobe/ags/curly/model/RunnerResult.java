@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.NumberBinding;
-import javafx.beans.binding.When;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.LongProperty;
@@ -111,22 +109,17 @@ public abstract class RunnerResult<T extends RunnerResult> {
         Platform.runLater(() -> trackSummaryAgainstAttionalDetail(detail));
     }
 
-    private DoubleBinding completionSummary;
-    private DoubleBinding successSummary;
-
     private void trackSummaryAgainstAttionalDetail(T detail) {
-        if (completionSummary == null) {
-            completionSummary = detail.percentComplete().add(0);
-        } else {
-            completionSummary = completionSummary.add(detail.percentComplete());
-        }
-        if (successSummary == null) {
-            successSummary = detail.percentSuccess().add(0);
-        } else {
-            successSummary = successSummary.add(detail.percentSuccess());
-        }
-        percentComplete.bind(completionSummary.divide(details.size()));
-        percentSuccess.bind(successSummary.divide(details.size()));
+        detail.percentSuccess().addListener(this::recalculatePercentSuccess);
+        detail.percentComplete().addListener(this::recalculatePercentComplete);
+    }
+    
+    private void recalculatePercentSuccess(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+        percentSuccess.set(details.stream().map(RunnerResult::percentSuccess).map(DoubleProperty::get).reduce(0.0, Double::sum) / (double) details.size());
+    }
+
+    private void recalculatePercentComplete(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+        percentComplete.set(details.stream().map(RunnerResult::percentComplete).map(DoubleProperty::get).reduce(0.0, Double::sum) / (double) details.size());        
     }
 
     abstract public String toHtml(int level);
