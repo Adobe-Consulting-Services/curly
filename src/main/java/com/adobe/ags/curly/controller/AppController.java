@@ -244,6 +244,7 @@ public class AppController {
         numberCol.setCellValueFactory(row -> new ReadOnlyObjectWrapper(
                 (row.getTableView().getItems().indexOf(row.getValue()) + 1) + ""));
         batchDataTable.getColumns().add(numberCol);
+        numberCol.setMinWidth(50);
 
         data.get(0).keySet().forEach(varName -> {
             TableColumn<Map<String, String>, String> varCol = new TableColumn(varName);
