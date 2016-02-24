@@ -28,6 +28,8 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
@@ -200,6 +202,18 @@ public class ErrorBehaviorTest {
 
     private boolean isBindingTrue(BooleanBinding binding) {
         binding.invalidate();
+        sync();
         return binding != null && binding.getValue() != null && binding.get();
+    }
+    
+    private void sync() {
+        Semaphore test = new Semaphore(1);
+        test.acquireUninterruptibly();
+        Platform.runLater(test::release);
+        try {
+            test.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ErrorBehaviorTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
