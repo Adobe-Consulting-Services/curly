@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2015 Adobe.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,9 @@ import com.adobe.ags.curly.ApplicationState;
 import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.model.ActionUtils;
 import com.adobe.ags.curly.xml.Action;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.sun.javafx.collections.ObservableListWrapper;
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,6 +63,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class DataImporterController {
+
     public static final String DONT_USE = "";
 
     @FXML // fx:id="currentFileName"
@@ -73,7 +77,7 @@ public class DataImporterController {
 
     @FXML // fx:id="skipFirstSelection"
     private ChoiceBox<Integer> skipFirstSelection; // Value injected by FXMLLoader
-    
+
     @FXML
     void chooseFile(ActionEvent event) {
         FileChooser openFileDialog = new FileChooser();
@@ -82,17 +86,18 @@ public class DataImporterController {
         if (selected != null && selected.exists() && selected.isFile()) {
             openFile(selected);
         }
-    } 
-    
-    Consumer<List<Map<String,String>>> okHandler = null;
+    }
+
+    Consumer<List<Map<String, String>>> okHandler = null;
     Runnable callWhenDone = null;
     List<String> colMapping;
     ObservableList<List<String>> tableData;
+
     @FXML
     void okPressed(ActionEvent event) {
-        okHandler.accept(tableData.stream().map(row->{
+        okHandler.accept(tableData.stream().map(row -> {
             Map<String, String> params = new HashMap<>();
-            for (int i=0; i < row.size(); i++) {
+            for (int i = 0; i < row.size(); i++) {
                 if (!colMapping.get(i).equals(DONT_USE)) {
                     params.put(colMapping.get(i), row.get(i));
                 }
@@ -102,9 +107,10 @@ public class DataImporterController {
         if (callWhenDone != null) {
             callWhenDone.run();
         }
-    }    
-    
+    }
+
     ObservableList<Action> actions;
+
     public void setActions(ObservableList<Action> actions) {
         this.actions = actions;
     }
@@ -112,23 +118,23 @@ public class DataImporterController {
     public void setFinishImportHandler(Consumer<List<Map<String, String>>> handler) {
         okHandler = handler;
     }
-    
+
     public void whenFinished(Runnable finishAction) {
         callWhenDone = finishAction;
     }
-    
+
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         assert currentFileName != null : "fx:id=\"currentFileName\" was not injected: check your FXML file 'DataImporter.fxml'.";
         assert worksheetSelector != null : "fx:id=\"worksheetSelector\" was not injected: check your FXML file 'DataImporter.fxml'.";
         assert contentTable != null : "fx:id=\"contentTable\" was not injected: check your FXML file 'DataImporter.fxml'.";
         assert skipFirstSelection != null : "fx:id=\"skipFirstSelection\" was not injected: check your FXML file 'DataImporter.fxml'.";
-                
+
         worksheetSelector.getSelectionModel().selectedItemProperty().addListener(this::changeSheet);
-        List<Integer> zeroThroughTen = IntStream.range(0,10).boxed().collect(Collectors.toList());
+        List<Integer> zeroThroughTen = IntStream.range(0, 10).boxed().collect(Collectors.toList());
         skipFirstSelection.setItems(new ObservableListWrapper<>(zeroThroughTen));
-        Platform.runLater(()->skipFirstSelection.getSelectionModel().selectFirst());
-        
+        Platform.runLater(() -> skipFirstSelection.getSelectionModel().selectFirst());
+
         contentTable.setPlaceholder(new Label(ApplicationState.getMessage(NO_DATA_LOADED)));
     }
 
@@ -139,8 +145,10 @@ public class DataImporterController {
             currentFileName.setText(null);
             if (file.getName().toLowerCase().endsWith("txt")) {
                 openTextFile(file);
+            } else if (file.getName().toLowerCase().endsWith("json")) {
+                openJson(file);
             } else if (file.getName().toLowerCase().endsWith("xls")) {
-                openLegacyExcel(file);            
+                openLegacyExcel(file);
             } else if (file.getName().toLowerCase().endsWith("xlsx")) {
                 openExcel(file);
             }
@@ -152,35 +160,74 @@ public class DataImporterController {
 
     private void openTextFile(File file) throws FileNotFoundException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
-        setTableData(reader.lines().map(line->Arrays.asList(line.split("\\t"))).collect(Collectors.toList()));
+        setTableData(reader.lines().map(line -> Arrays.asList(line.split("\\t"))).collect(Collectors.toList()));
     }
 
-    private void openLegacyExcel(File file) throws IOException {        
+    private void openLegacyExcel(File file) throws IOException {
         openWorkbook(new HSSFWorkbook(new FileInputStream(file)));
     }
-    
+
     private void openExcel(File file) throws IOException, InvalidFormatException {
         openWorkbook(new XSSFWorkbook(file));
     }
-    
+
+    private void openJson(File file) throws FileNotFoundException {
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        JsonParser parser = new JsonParser();
+        JsonObject data = parser.parse(reader).getAsJsonObject();
+
+        data.entrySet().stream().
+                filter((entry) -> (entry.getValue().isJsonArray())).
+                forEach((entry) -> {
+                    worksheetSelector.getItems().add(entry.getKey());
+                });
+
+        sheetReader = (String node) -> readNodes(data.get(node).getAsJsonArray());
+        skipFirstSelection.setValue(1);
+        Platform.runLater(() -> worksheetSelector.getSelectionModel().selectFirst());
+    }
+
+    private List<List<String>> readNodes(JsonArray data) {
+        TreeSet<String> attributes = new TreeSet<>();
+        List<Map<String, String>> rows = new ArrayList<>();
+        data.forEach((elem) -> {
+            if (elem.isJsonObject()) {
+                JsonObject row = elem.getAsJsonObject();
+                Map<String, String> rowMap = row.entrySet().stream().
+                        filter((entry) -> entry.getValue().isJsonPrimitive()).
+                        collect(Collectors.toMap((entry) -> entry.getKey(),
+                                (entry) -> entry.getValue().getAsString()));
+                rows.add(rowMap);
+                attributes.addAll(rowMap.keySet());
+            }
+        });
+        List<List<String>> results = rows.stream().map((row)
+                -> attributes.stream().map((attr)
+                        -> row.get(attr)).collect(Collectors.toList())
+        ).collect(Collectors.toList());
+        results.add(0, new ArrayList<String>(attributes));
+        return results;
+    }
+
     private void openWorkbook(Workbook workbook) {
         ObservableList<String> sheets = new ObservableListWrapper<>(new ArrayList<>());
-        for (int i=0; i < workbook.getNumberOfSheets(); i++) {
+        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
             worksheetSelector.getItems().add(workbook.getSheetName(i));
         }
-        
+
         sheetReader = (String sheetName) -> readSheet(workbook.getSheet(sheetName));
-        
-        Platform.runLater(()->worksheetSelector.getSelectionModel().selectFirst());
+
+        Platform.runLater(() -> worksheetSelector.getSelectionModel().selectFirst());
     }
-    
+
     Callback<String, List<List<String>>> sheetReader = null;
+
     private void changeSheet(ObservableValue<? extends String> observable, String oldValue, String newValue) {
         if (sheetReader != null) {
             setTableData(sheetReader.call(newValue));
         }
     }
-    
+
     private List<List<String>> readSheet(Sheet sheet) {
         List<List<String>> data = new ArrayList<>();
         sheet.forEach(row -> {
@@ -199,13 +246,13 @@ public class DataImporterController {
         int numberOfColumns = data.stream().map(List::size).reduce(Math::max).orElse(0);
         contentTable.getColumns().clear();
         colMapping = new ArrayList<>();
-        for (int i=0; i < numberOfColumns; i++) {
+        for (int i = 0; i < numberOfColumns; i++) {
             colMapping.add(DONT_USE);
             TableColumn<List<String>, String> column = new TableColumn<>();
             final int index = i;
             ComboBox<String> selector = generateVariableSelector();
             selector.getSelectionModel().selectedItemProperty().
-                    addListener((prop, oldValue, newValue)-> colMapping.set(index, newValue));
+                    addListener((prop, oldValue, newValue) -> colMapping.set(index, newValue));
             column.setGraphic(selector);
             column.setCellValueFactory((TableColumn.CellDataFeatures<List<String>, String> param) -> {
                 List<String> row = param.getValue();
@@ -216,7 +263,7 @@ public class DataImporterController {
         }
         contentTable.setItems(tableData);
     }
-    
+
     private String getStringValueFromCell(Cell cell) {
         switch (cell.getCellType()) {
             case Cell.CELL_TYPE_BOOLEAN:
@@ -231,10 +278,10 @@ public class DataImporterController {
                 return "???";
         }
     }
-    
+
     private ComboBox<String> generateVariableSelector() {
         Set vars = new TreeSet<>();
-        actions.stream().map(action->ActionUtils.getVariableNames(action)).forEach(vars::addAll);
+        actions.stream().map(action -> ActionUtils.getVariableNames(action)).forEach(vars::addAll);
         ComboBox<String> box = new ComboBox<>();
         vars.add(DONT_USE);
         box.getItems().addAll(vars);
