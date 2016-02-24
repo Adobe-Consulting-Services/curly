@@ -37,10 +37,10 @@ import javafx.embed.swing.JFXPanel;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -180,18 +180,18 @@ public class ErrorBehaviorTest {
     private void assertResults(RunnerResult result, boolean completelySuccessful, boolean completed) {
         try {
             // Headless JFX sometimes throws NPE when evaluating these, not sure why.
-            boolean isCompleted = isBindingTrue(result.completed());
-            boolean isSuccessful = isBindingTrue(result.completelySuccessful());
+            Boolean isCompleted = isBindingTrue(result.completed());
+            Boolean isSuccessful = isBindingTrue(result.completelySuccessful());
             if (completelySuccessful) {
-                assertTrue(isSuccessful);
+                assertTrue("Expected successful=true", isSuccessful);
             } else {
-                assertFalse(isSuccessful);
+                assertFalse("Expected successful=false", isSuccessful);
             }
 
             if (completed) {
-                assertTrue(isCompleted);
+                assertTrue("Expected completed=true", isCompleted);
             } else {
-                assertFalse(isCompleted);
+                assertFalse("Expected completed=false", isCompleted);
             }
         } catch (NullPointerException ex) {
             Logger.getLogger(ErrorBehaviorTest.class.getName()).warning("Completed and Completely succcessful properties shouldn't be null");
