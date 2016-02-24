@@ -199,6 +199,7 @@ public class ErrorBehaviorTest {
     }
 
     private boolean isBindingTrue(BooleanBinding binding) {
+        binding.invalidate();
         return binding != null && binding.getValue() != null && binding.get();
     }
 }
