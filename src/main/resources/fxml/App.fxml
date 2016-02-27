@@ -164,7 +164,7 @@ limitations under the License.
                                         <Insets bottom="5.0" top="5.0" />
                                     </padding>
                            <center>
-                              <HBox BorderPane.alignment="CENTER">
+                              <HBox spacing="5.0" BorderPane.alignment="CENTER">
                                  <children>
                                     <Label prefHeight="25.0" text="%batchsize" />
                                     <TextField fx:id="batchSize" prefHeight="27.0" prefWidth="66.0" />
