@@ -167,9 +167,9 @@ limitations under the License.
                               <HBox spacing="5.0" BorderPane.alignment="CENTER">
                                  <children>
                                     <Label prefHeight="25.0" text="%batchsize" />
-                                    <TextField fx:id="batchSize" prefHeight="27.0" prefWidth="66.0" />
+                                    <TextField fx:id="batchSize" prefHeight="27.0" prefWidth="66.0" promptText="All" />
                                     <Label prefHeight="25.0" text="%batchnumber" />
-                                    <ComboBox fx:id="batchNumberChoice" prefHeight="25.0" />
+                                    <ComboBox fx:id="batchNumberChoice" disable="true" prefHeight="25.0" />
                                  </children>
                               </HBox>
                            </center>

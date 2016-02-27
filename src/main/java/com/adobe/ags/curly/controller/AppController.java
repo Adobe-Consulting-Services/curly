@@ -289,11 +289,17 @@ public class AppController {
         try {
             batchSizeValue = Integer.parseInt(newValue);
         } catch (NumberFormatException ex) {
-            batchSize.setText("0");
-            return;
+            batchSizeValue = -1;
         }
-        if (batchSizeValue <= 0) {
+        if (batchSizeValue <= 0 || batchSizeValue >= batchDataTable.getItems().size()) {
+            batchNumberChoice.setValue(null);
             batchNumberChoice.setDisable(true);
+            batchSize.clear();
+            batchSizeValue = -1;
+            if (newValue != null && !newValue.isEmpty()) {
+                Platform.runLater(()->batchSize.setText(null));
+            }
+            return;
         } else {
             batchNumberChoice.setDisable(false);
             int numBatches = (batchDataTable.getItems().size() + batchSizeValue - 1) / batchSizeValue;
@@ -304,17 +310,25 @@ public class AppController {
         }
     }
 
-    private void showSelectedBatch(int batch) {
-        int batchStart = (batch - 1) * batchSizeValue;
-        int batchEnd = Math.min(batchDataTable.getItems().size(), batchStart + batchSizeValue);
-        highlightedRows.setAll(IntStream.range(batchStart, batchEnd).boxed().collect(Collectors.toList()));
+    private void showSelectedBatch(Integer batch) {
+        if (batch == null || batch < 0 || batchSizeValue <= 0) {
+            highlightedRows.clear();
+        } else {
+            int batchStart = (batch - 1) * batchSizeValue;
+            int batchEnd = Math.min(batchDataTable.getItems().size(), batchStart + batchSizeValue);
+            highlightedRows.setAll(IntStream.range(batchStart, batchEnd).boxed().collect(Collectors.toList()));
+        }
     }
 
     private void updateRowHighlight(TableRow<Map<String, String>> row) {
         int r = 160;
         int g = 160;
         int b = 160;
-        if (highlightedRows.contains(row.getIndex())) {
+        if (highlightedRows.isEmpty()) {
+            r = 255;
+            g = 255;
+            b = 255;
+        } else if (highlightedRows.contains(row.getIndex())) {
             r = 200;
             g = 255;
             b = 200;
