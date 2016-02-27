@@ -38,20 +38,26 @@ import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 
 public class AppController {
@@ -97,6 +103,14 @@ public class AppController {
 
     @FXML // fx:id="concurencyChoice"
     private ChoiceBox<Integer> concurencyChoice; // Value injected by FXMLLoader
+
+    @FXML // fx:id="batchSize"
+    private TextField batchSize; // Value injected by FXMLLoader
+
+    @FXML // fx:id="batchNumberChoice"
+    private ComboBox<Integer> batchNumberChoice; // Value injected by FXMLLoader
+
+    ObservableList<Integer> highlightedRows = FXCollections.observableArrayList();
 
     @FXML // fx:id="batchRunStatus"
     private Label batchRunStatus; // Value injected by FXMLLoader
@@ -148,7 +162,9 @@ public class AppController {
 
     @FXML
     void batchStartClicked(ActionEvent event) {
-        BatchRunner runner = new BatchRunner(loginHandler, concurencyChoice.getValue(), getActions(), batchDataTable.getItems(), defaults, defaults.keySet());
+        ObservableList<Map<String, String>> selectedItems = FXCollections.observableArrayList();
+        highlightedRows.stream().map(batchDataTable.getItems()::get).forEach(selectedItems::add);
+        BatchRunner runner = new BatchRunner(loginHandler, concurencyChoice.getValue(), getActions(), selectedItems, defaults, defaults.keySet());
         CurlyApp.openActivityMonitor(runner);
     }
 
@@ -172,8 +188,8 @@ public class AppController {
         if (targetFile != null) {
             ActionUtils.saveToFile(targetFile, actionList.getItems());
         }
-    }    
-    
+    }
+
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         assert connectionTab != null : "fx:id=\"connectionTab\" was not injected: check your FXML file 'App.fxml'.";
@@ -188,6 +204,8 @@ public class AppController {
         assert batchDataTable != null : "fx:id=\"batchDataTable\" was not injected: check your FXML file 'App.fxml'.";
         assert concurencyChoice != null : "fx:id=\"concurencyChoice\" was not injected: check your FXML file 'App.fxml'.";
         assert batchRunStatus != null : "fx:id=\"batchRunStatus\" was not injected: check your FXML file 'App.fxml'.";
+        assert batchSize != null : "fx:id=\"batchSize\" was not injected: check your FXML file 'App.fxml'.";
+        assert batchNumberChoice != null : "fx:id=\"batchNumberChoice\" was not injected: check your FXML file 'App.fxml'.";
 
         loginHandler = new AuthHandler(
                 hostField.textProperty(), sslCheckbox.selectedProperty(),
@@ -209,7 +227,16 @@ public class AppController {
                 -> ConnectionManager.getInstance().setPoolSize(newValue.getSelectedItem()));
         Platform.runLater(() -> concurencyChoice.getSelectionModel().selectFirst());
 
+        batchSize.textProperty().addListener((property, oldValue, newValue) -> updateBatchSize(newValue));
+        batchNumberChoice.valueProperty().addListener((property, oldValue, newValue) -> showSelectedBatch(newValue));
+
         batchDataTable.setPlaceholder(new Label(ApplicationState.getMessage(NO_DATA_LOADED)));
+        batchDataTable.setRowFactory((TableView<Map<String, String>> param) -> {
+            final TableRow<Map<String, String>> row = new TableRow<>();
+            row.indexProperty().addListener((property, newValue, oldValue)->updateRowHighlight(row));
+            highlightedRows.addListener((ListChangeListener.Change<? extends Integer> c) -> updateRowHighlight(row));
+            return row;
+        });
     }
 
     private void updateConnectionTabStyle() {
@@ -253,5 +280,50 @@ public class AppController {
         });
 
         batchDataTable.setItems(new ObservableListWrapper<>(data));
+        batchSize.setText(String.valueOf(data.size()));
+    }
+
+    int batchSizeValue = 0;
+
+    private void updateBatchSize(String newValue) {
+        try {
+            batchSizeValue = Integer.parseInt(newValue);
+        } catch (NumberFormatException ex) {
+            batchSize.setText("0");
+            return;
+        }
+        if (batchSizeValue <= 0) {
+            batchNumberChoice.setDisable(true);
+        } else {
+            batchNumberChoice.setDisable(false);
+            int numBatches = (batchDataTable.getItems().size() + batchSizeValue - 1) / batchSizeValue;
+            numBatches = Math.min(numBatches, 50);
+            List<Integer> selections = IntStream.range(1, numBatches+1).boxed().collect(Collectors.toList());
+            batchNumberChoice.setItems(new ObservableListWrapper<>(selections));
+            batchNumberChoice.setValue(1);
+        }
+    }
+
+    private void showSelectedBatch(int batch) {
+        int batchStart = (batch - 1) * batchSizeValue;
+        int batchEnd = Math.min(batchDataTable.getItems().size(), batchStart + batchSizeValue);
+        highlightedRows.setAll(IntStream.range(batchStart, batchEnd).boxed().collect(Collectors.toList()));
+    }
+
+    private void updateRowHighlight(TableRow<Map<String, String>> row) {
+        int r = 160;
+        int g = 160;
+        int b = 160;
+        if (highlightedRows.contains(row.getIndex())) {
+            r = 200;
+            g = 255;
+            b = 200;
+        }
+        if (row.getIndex() % 2 == 1) {
+            r = Math.max(0, r-16);
+            g = Math.max(0, g-16);
+            b = Math.max(0, b-16);
+        }
+        row.setBackground(new Background(new BackgroundFill(Color.rgb(r, g, b), null, null)));
     }
 }

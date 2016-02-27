@@ -138,7 +138,7 @@ limitations under the License.
                                     <left>
                                         <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                                             <children>
-                                                <Label prefHeight="25.0" prefWidth="83.0" text="%concurrency">
+                                                <Label prefHeight="25.0" text="%concurrency">
                                                     <HBox.margin>
                                                         <Insets left="6.0" />
                                                     </HBox.margin>
@@ -160,12 +160,19 @@ limitations under the License.
                                             </BorderPane.margin>
                                         </HBox>
                                     </right>
-                                    <center>
-                                        <Label fx:id="batchRunStatus" BorderPane.alignment="CENTER" />
-                                    </center>
                                     <padding>
                                         <Insets bottom="5.0" top="5.0" />
                                     </padding>
+                           <center>
+                              <HBox BorderPane.alignment="CENTER">
+                                 <children>
+                                    <Label prefHeight="25.0" text="%batchsize" />
+                                    <TextField fx:id="batchSize" prefHeight="27.0" prefWidth="66.0" />
+                                    <Label prefHeight="25.0" text="%batchnumber" />
+                                    <ComboBox fx:id="batchNumberChoice" prefHeight="25.0" />
+                                 </children>
+                              </HBox>
+                           </center>
                                 </BorderPane>
                             </children>
                         </VBox>
