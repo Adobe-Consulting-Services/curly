@@ -163,7 +163,11 @@ public class AppController {
     @FXML
     void batchStartClicked(ActionEvent event) {
         ObservableList<Map<String, String>> selectedItems = FXCollections.observableArrayList();
-        highlightedRows.stream().map(batchDataTable.getItems()::get).forEach(selectedItems::add);
+        if (highlightedRows.isEmpty()) {
+            selectedItems.addAll(batchDataTable.getItems());
+        } else {
+            highlightedRows.stream().map(batchDataTable.getItems()::get).forEach(selectedItems::add);
+        }
         BatchRunner runner = new BatchRunner(loginHandler, concurencyChoice.getValue(), getActions(), selectedItems, defaults, defaults.keySet());
         CurlyApp.openActivityMonitor(runner);
     }
@@ -280,7 +284,6 @@ public class AppController {
         });
 
         batchDataTable.setItems(new ObservableListWrapper<>(data));
-        batchSize.setText(String.valueOf(data.size()));
     }
 
     int batchSizeValue = 0;
