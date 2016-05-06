@@ -128,7 +128,7 @@ public class CurlyApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         applicationWindow = stage;
-        Locale locale = Locale.getDefault();
+        Locale locale = Locale.US;
         ApplicationState.getInstance().setResourceBundle(ResourceBundle.getBundle("Bundle", locale));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/App.fxml"));
         loader.setResources(ApplicationState.getInstance().getResourceBundle());
