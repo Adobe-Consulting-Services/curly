@@ -383,10 +383,10 @@ public class ActionRunner implements Runnable {
                     String newParamValue = newParamValues != null && newParamValues.size() > i && newParamValues.get(i) != null ? newParamValues.get(i) : paramValues.get(i);
                
                     // fix for removing JCR values (setting them to an empty
-					// string deletes them from the JCR)
-					if (null == newParamValue) {
-						newParamValue = new String("");
-					}
+                    // string deletes them from the JCR)
+                    if (null == newParamValue) {
+                    	newParamValue = new String("");
+                    }
                     
                     newParamValue = newParamValue.replaceAll(variableNameMatchPattern, variableValue);
                     if (newParamName.contains("/") && newParamValue.equals("@" + newParamName)) {
