@@ -381,6 +381,13 @@ public class ActionRunner implements Runnable {
                 List<String> newParamValues = newValues.get(paramNameProperty.get());
                 for (int i = 0; i < paramValues.size(); i++) {
                     String newParamValue = newParamValues != null && newParamValues.size() > i && newParamValues.get(i) != null ? newParamValues.get(i) : paramValues.get(i);
+               
+                    // fix for removing JCR values (setting them to an empty
+					// string deletes them from the JCR)
+					if (null == newParamValue) {
+						newParamValue = new String("");
+					}
+                    
                     newParamValue = newParamValue.replaceAll(variableNameMatchPattern, variableValue);
                     if (newParamName.contains("/") && newParamValue.equals("@" + newParamName)) {
                         // The upload name should actually be the file name, not the full path of the file.
