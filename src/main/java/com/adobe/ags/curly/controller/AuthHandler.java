@@ -33,17 +33,22 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 public class AuthHandler {
-    private static final String TEST_PAGE = "/libs/cq/core/content/welcome.html";
+    private static final String TEST_PAGE = "/content.json";
 
     public final Login model;
 
@@ -77,7 +82,26 @@ public class AuthHandler {
     }
 
     public CloseableHttpClient getAuthenticatedClient() {
-        return ConnectionManager.getInstance().getAuthenticatedClient(getCredentialsProvider());
+        String[] hostPort = model.hostProperty().get().split(":");
+        if (hostPort.length == 2) {
+            int port = 4502;
+            try {
+                port = Integer.parseInt(hostPort[1]);
+            } catch (NumberFormatException ex) {
+                // TODO: Log this
+            }
+            HttpHost targetHost = new HttpHost(hostPort[0], port);
+            AuthCache authCache = new BasicAuthCache();
+            authCache.put(targetHost, new BasicScheme());
+
+            // Add AuthCache to the execution context
+            final HttpClientContext context = HttpClientContext.create();
+            context.setCredentialsProvider(getCredentialsProvider());
+            context.setAuthCache(authCache);
+            return ConnectionManager.getInstance().getAuthenticatedClient(getCredentialsProvider(), context);
+        } else {
+            return ConnectionManager.getInstance().getAuthenticatedClient(getCredentialsProvider(), null);        
+        }         
     }
 
     private CredentialsProvider getCredentialsProvider() {
