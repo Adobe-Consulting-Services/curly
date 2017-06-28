@@ -13,4 +13,4 @@ More information about Curly is available in the wiki:
 + [Reporting](https://github.com/badvision/curly/wiki/Reporting)
 
 ## Download
-The first release candidate for 2.0 has been added and can be [Downloaded here](https://github.com/badvision/curly/releases/download/2.0-rc3/Curly-2.0-SNAPSHOT.jar).
+The first release candidate for 2.0 has been added and can be [Downloaded here](https://github.com/Adobe-Consulting-Services/curly/releases/download/2.0-rc5/Curly-2.0-SNAPSHOT.jar).
