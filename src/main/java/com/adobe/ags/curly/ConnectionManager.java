@@ -20,6 +20,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
 
 public class ConnectionManager {
     static private ConnectionManager singleton;
@@ -48,13 +49,23 @@ public class ConnectionManager {
         }
     }
     
-    public CloseableHttpClient getAuthenticatedClient(CredentialsProvider creds) {
+    
+    public CloseableHttpClient getAuthenticatedClient(CredentialsProvider creds, HttpContext defaultContext) {
         CloseableHttpClient httpclient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .setConnectionManagerShared(true)
                 .setRedirectStrategy(new LaxRedirectStrategy())
                 .setDefaultCredentialsProvider(creds)
                 .build();
+        if (defaultContext != null) {
+            this.defaultContext = defaultContext;
+        }
         return httpclient;
     }
+    
+    static HttpContext defaultContext;
+    public static HttpContext getContextForConnection(CloseableHttpClient client) {         
+        return defaultContext;
+    }    
+    
 }
