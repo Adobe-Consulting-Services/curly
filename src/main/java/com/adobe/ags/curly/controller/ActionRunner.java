@@ -16,10 +16,11 @@
 package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.ApplicationState;
+import com.adobe.ags.curly.ConnectionManager;
 import static com.adobe.ags.curly.Messages.*;
+import com.adobe.ags.curly.model.ActionResult;
 import com.adobe.ags.curly.model.ActionUtils;
 import com.adobe.ags.curly.xml.Action;
-import com.adobe.ags.curly.model.ActionResult;
 import com.google.gson.internal.LinkedTreeMap;
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -72,7 +75,7 @@ public class ActionRunner implements Runnable {
     Action action;
     String URL;
     HttpMethod httpMethod = HttpMethod.GET;
-    String putFile="";
+    String putFile = "";
     boolean httpMethodExplicitlySet = false;
     boolean multipart = false;
     ActionResult response;
@@ -125,14 +128,14 @@ public class ActionRunner implements Runnable {
                     break;
                 case PUT:
                     request = new HttpPut(getURL());
-                    ((HttpPut)request).setEntity(new FileEntity(new File(putFile)));
+                    ((HttpPut) request).setEntity(new FileEntity(new File(putFile)));
                     break;
                 default:
                     throw new UnsupportedOperationException(ApplicationState.getMessage(UNSUPPORTED_METHOD_ERROR) + ": " + httpMethod.name());
             }
 
             addHeaders(request);
-            CloseableHttpResponse httpResponse = client.get().execute(request);
+            CloseableHttpResponse httpResponse = client.get().execute(request, ConnectionManager.getContextForConnection(client.get()));
             response.processHttpResponse(httpResponse, action.getResultType());
             EntityUtils.consume(httpResponse.getEntity());
         } catch (IOException | URISyntaxException ex) {
@@ -217,13 +220,29 @@ public class ActionRunner implements Runnable {
         }
     }
 
-    static final Pattern UNQUOTED_SPACES = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
-
-    private List<String> splitByUnquotedSpaces(String str) {
+    public static List<String> splitByUnquotedSpaces(String str) {
         List<String> list = new ArrayList<>();
-        Matcher m = UNQUOTED_SPACES.matcher(str);
-        while (m.find()) {
-            list.add(m.group(1).replace("\"", ""));
+        String token = "";
+        boolean insideQuote = false;
+        for (int i=0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            
+            switch (c) {
+                case '"':
+                    insideQuote = !insideQuote;
+                    break;
+                case ' ':
+                    if (!insideQuote) {
+                        list.add(token);
+                        token = "";
+                        break;
+                    }
+                default:
+                    token += c;
+            }
+        }
+        if (token.length() > 0) {
+            list.add(token);
         }
         return list;
     }
@@ -319,8 +338,9 @@ public class ActionRunner implements Runnable {
             String[] parts = originalName.split("\\|");
             String var = parts[0];
             String replaceVar = Pattern.quote("${" + originalName + "}");
-            URL = URL.replaceAll(replaceVar, Matcher.quoteReplacement(variables.get(var)));
-            putFile = putFile.replaceAll(replaceVar,Matcher.quoteReplacement(variables.get(var)));
+            String replace = variables.get(var) == null ? "" : variables.get(var);
+            URL = URL.replaceAll(replaceVar, Matcher.quoteReplacement(replace));
+            putFile = putFile.replaceAll(replaceVar, Matcher.quoteReplacement(replace));
         });
         applyMultiVariablesToMap(variables, postVariables);
         applyMultiVariablesToMap(variables, getVariables);
