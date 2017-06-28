@@ -60,9 +60,30 @@
         "resultType":"HTML"
     },
     {
+        "name": "Create a folder",
+        "description": "Create a new sling folder with a given title",
+        "command": "-Fjcr:primaryType=${primary type|sling:UnorderedFolder} -Fjcr:title=\"${title|My Folder Title}\" ${server}${parent path|/content/dam}/${name|folder-name}"
+    },
+    {
         "name": "Upload an asset/file",
         "description": "Create a new file at a specified JCR path",
         "command": "-T ${directory|/path/to/file}/${file name} ${server}${jcr path|/content/dam}/${file name|myimage.jpg}",
+        "resultType":"HTML"
+    },
+    {
+        "name": "Add tag to asset",
+        "description": "Add an additional tag to an asset",
+        "command": "-Fcq:tags=\"+${namespace|custom}:${tag|tag/subtag}\" -Fcq:tags@TypeHint=String[] -Fcq:tags@Patch=true ${server}${folder}/${filename}/jcr:content/metadata"
+    },
+    {
+        "name": "Remove tag from asset",
+        "description": "Remove a specific tag from an asset",
+        "command": "-Fcq:tags=\"+${namespace|custom}:${tag|tag/subtag}\" -Fcq:tags@TypeHint=String[] -Fcq:tags@Patch=true ${server}${folder}/${filename}/jcr:content/metadata"
+    },
+    {
+        "name": "Create a new tag",
+        "description": "Define a new tag in tag manager",
+        "command": "-F:status=browser -Fcmd=createTag -Fjcr:title=${tag title|My Tag} -FparentTagID=${namespace|custom}:${parent tag|tag} -Ftag=${tag|my-tag} ${server}/bin/tagcommand",
         "resultType":"HTML"
     },
     {
