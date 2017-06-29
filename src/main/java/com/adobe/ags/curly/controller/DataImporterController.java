@@ -42,6 +42,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -58,6 +60,7 @@ import javafx.util.Callback;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -230,12 +233,15 @@ public class DataImporterController {
 
     private List<List<String>> readSheet(Sheet sheet) {
         List<List<String>> data = new ArrayList<>();
+        IntegerProperty numColumns = new SimpleIntegerProperty(sheet.getRow(0).getLastCellNum());
         sheet.forEach(row -> {
             List<String> rowData = new ArrayList<>();
-            row.forEach(cell -> {
+            numColumns.set(Math.max(numColumns.get(), row.getLastCellNum()));
+            for (int i=0; i < numColumns.get(); i++) {
+                Cell cell = row.getCell(i, Row.RETURN_BLANK_AS_NULL);
                 String col = getStringValueFromCell(cell);
                 rowData.add(col);
-            });
+            }
             data.add(rowData);
         });
         return data;
@@ -265,7 +271,12 @@ public class DataImporterController {
     }
 
     private String getStringValueFromCell(Cell cell) {
-        switch (cell.getCellType()) {
+        if (cell == null) return null;
+        int cellType = cell.getCellType();
+        if (cellType == Cell.CELL_TYPE_FORMULA) {
+            cellType = cell.getCachedFormulaResultType();
+        }
+        switch (cellType) {
             case Cell.CELL_TYPE_BOOLEAN:
                 return Boolean.toString(cell.getBooleanCellValue());
             case Cell.CELL_TYPE_BLANK:
