@@ -224,24 +224,26 @@ public class ActionRunner implements Runnable {
         List<String> list = new ArrayList<>();
         String token = "";
         boolean insideQuote = false;
-        for (int i=0; i < str.length(); i++) {
+        for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
-            
+
             switch (c) {
                 case '"':
                     insideQuote = !insideQuote;
                     break;
                 case ' ':
                     if (!insideQuote) {
-                        list.add(token);
-                        token = "";
+                        if (!token.isEmpty()) {
+                            list.add(token);
+                            token = "";
+                        }
                         break;
                     }
                 default:
                     token += c;
             }
         }
-        if (token.length() > 0) {
+        if (!token.isEmpty()) {
             list.add(token);
         }
         return list;
@@ -359,7 +361,11 @@ public class ActionRunner implements Runnable {
                 String[] variableNameParts = originalName.split("\\|");
                 String variableName = variableNameParts[0];
                 String variableNameMatchPattern = Pattern.quote("${" + originalName + "}");
-                String variableValue = Matcher.quoteReplacement(variables.get(variableName));
+                String val = variables.get(variableName);
+                if (val == null) {
+                    val = "";
+                }
+                String variableValue = Matcher.quoteReplacement(val);
                 //----
                 String newParamValue = newValues.containsKey(paramNameProperty.get()) ? newValues.get(paramNameProperty.get()) : paramValue;
                 String newParamName = paramNameProperty.get().replaceAll(variableNameMatchPattern, variableValue);
@@ -388,7 +394,11 @@ public class ActionRunner implements Runnable {
                 String[] variableNameParts = originalName.split("\\|");
                 String variableName = variableNameParts[0];
                 String variableNameMatchPattern = Pattern.quote("${" + originalName + "}");
-                String variableValue = Matcher.quoteReplacement(variables.get(variableName));
+                String val = variables.get(variableName);
+                if (val == null) {
+                    val = "";
+                }
+                String variableValue = Matcher.quoteReplacement(val);
                 String newParamName = paramNameProperty.get().replaceAll(variableNameMatchPattern, variableValue);
                 removeSet.add(paramNameProperty.get());
                 removeSet.add(paramName);
@@ -401,13 +411,13 @@ public class ActionRunner implements Runnable {
                 List<String> newParamValues = newValues.get(paramNameProperty.get());
                 for (int i = 0; i < paramValues.size(); i++) {
                     String newParamValue = newParamValues != null && newParamValues.size() > i && newParamValues.get(i) != null ? newParamValues.get(i) : paramValues.get(i);
-               
+
                     // fix for removing JCR values (setting them to an empty
                     // string deletes them from the JCR)
                     if (null == newParamValue) {
-                    	newParamValue = new String("");
+                        newParamValue = new String("");
                     }
-                    
+
                     newParamValue = newParamValue.replaceAll(variableNameMatchPattern, variableValue);
                     if (newParamName.contains("/") && newParamValue.equals("@" + newParamName)) {
                         // The upload name should actually be the file name, not the full path of the file.
