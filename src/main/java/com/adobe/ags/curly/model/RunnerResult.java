@@ -17,6 +17,7 @@ package com.adobe.ags.curly.model;
 
 import com.sun.javafx.collections.ObservableListWrapper;
 import java.util.ArrayList;
+import java.util.Collections;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -38,7 +39,7 @@ public abstract class RunnerResult<T extends RunnerResult> {
     final private DoubleProperty percentComplete = new SimpleDoubleProperty(0);
     final private BooleanProperty started = new SimpleBooleanProperty(false);
     final private ObservableList<ObservableValue> reportRow = new ObservableListWrapper<>(new ArrayList<>());
-    final private ObservableList<T> details = new ObservableListWrapper<>(new ArrayList<>());
+    final private ObservableList<T> details = new ObservableListWrapper<>(Collections.synchronizedList(new ArrayList<>()));
     final private LongProperty startTime = new SimpleLongProperty(-1);
     final private LongProperty endTime = new SimpleLongProperty(-1);
 
