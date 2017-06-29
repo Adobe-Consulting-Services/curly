@@ -232,6 +232,8 @@ public class ActionRunner implements Runnable {
                     insideQuote = !insideQuote;
                     break;
                 case ' ':
+                case '\t':
+                case '\n':
                     if (!insideQuote) {
                         if (!token.isEmpty()) {
                             list.add(token);
