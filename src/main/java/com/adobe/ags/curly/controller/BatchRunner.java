@@ -89,12 +89,19 @@ public class BatchRunner implements TaskRunner {
                         values.put(key,value.get());
                     }
                 });
-                ActionGroupRunner runner = new ActionGroupRunner("Row "+row,clientThread::get, actions, values, displayColumns);
+                ActionGroupRunner runner = new ActionGroupRunner("Row "+row,this::getConnection, actions, values, displayColumns);
                 result.addDetail(runner.results);
                 executor.execute(runner);
             } catch (ParseException ex) {
                 Logger.getLogger(BatchRunner.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    private CloseableHttpClient getConnection(boolean getNewOne) {
+        if (getNewOne) {
+            clientThread.remove();
+        }
+        return clientThread.get();
     }
 }

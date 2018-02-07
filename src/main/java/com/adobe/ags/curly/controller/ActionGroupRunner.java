@@ -27,7 +27,9 @@ import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,17 +43,17 @@ public class ActionGroupRunner implements TaskRunner {
     Map<String, String> vars;
     BooleanProperty skipTheRest = new SimpleBooleanProperty(false);
     ActionGroupRunnerResult results;
-    Supplier<CloseableHttpClient> clientSupplier;
+    Function<Boolean, CloseableHttpClient> clientSupplier;
     Action lastAction;
 
-    public ActionGroupRunner(String taskName, Supplier<CloseableHttpClient> clientSupplier, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) throws ParseException {
+    public ActionGroupRunner(String taskName, Function<Boolean, CloseableHttpClient> clientSupplier, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) throws ParseException {
         this.actions = new LinkedHashMap<>();
         this.clientSupplier = clientSupplier;
-        actions.forEach((action)->{
+        actions.forEach((Action action)->{
             lastAction = action;
             ActionRunner runner = null;
             try {
-                runner = new ActionRunner(this::getClient, action, variables);
+                runner = new ActionRunner(this::withClient, action, variables);
                 this.actions.put(action, runner);
             } catch (ParseException ex) {
                 Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
@@ -65,11 +67,19 @@ public class ActionGroupRunner implements TaskRunner {
     }
 
     CloseableHttpClient client;
-    private CloseableHttpClient getClient() {
+    private Optional<Exception> withClient(Function<CloseableHttpClient, Optional<Exception>> process) {
         if (client == null) {
-            client = clientSupplier.get();
+            client = clientSupplier.apply(false);
         }
-        return client;
+        Optional<Exception> ex = process.apply(client);
+        if (ex.isPresent() && ex.get() instanceof IllegalStateException) {
+            client = clientSupplier.apply(true);
+            ex = process.apply(client);
+        }
+        if (ex.isPresent()) {
+            client = null;
+        }
+        return ex;
     }
     
     @Override

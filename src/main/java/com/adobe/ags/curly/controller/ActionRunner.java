@@ -34,7 +34,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,10 +81,10 @@ public class ActionRunner implements Runnable {
     boolean httpMethodExplicitlySet = false;
     boolean multipart = false;
     ActionResult response;
-    Supplier<CloseableHttpClient> client;
+    Function<Function<CloseableHttpClient, Optional<Exception>>, Optional<Exception>> processor;
 
-    public ActionRunner(Supplier<CloseableHttpClient> client, Action action, Map<String, String> variables) throws ParseException {
-        this.client = client;
+    public ActionRunner(Function<Function<CloseableHttpClient, Optional<Exception>>, Optional<Exception>> processor, Action action, Map<String, String> variables) throws ParseException {
+        this.processor = processor;
         parseCommand(action);
         applyVariables(variables);
         response = new ActionResult(this);
@@ -135,10 +137,20 @@ public class ActionRunner implements Runnable {
             }
 
             addHeaders(request);
-            CloseableHttpResponse httpResponse = client.get().execute(request, ConnectionManager.getContextForConnection(client.get()));
-            response.processHttpResponse(httpResponse, action.getResultType());
-            EntityUtils.consume(httpResponse.getEntity());
-        } catch (IOException | URISyntaxException ex) {
+            Optional<Exception> ex = processor.apply((CloseableHttpClient client) -> {
+                try {
+                    CloseableHttpResponse httpResponse = client.execute(request, ConnectionManager.getContextForConnection(client));
+                    response.processHttpResponse(httpResponse, action.getResultType());
+                    EntityUtils.consume(httpResponse.getEntity());
+                    return Optional.empty();
+                } catch (Exception e) {
+                    return Optional.of(e);
+                }
+            });
+            if (ex.isPresent()) {
+                throw ex.get();
+            }
+        } catch (Exception ex) {
             Logger.getLogger(ActionRunner.class.getName()).log(Level.SEVERE, null, ex);
             response.setException(ex);
         } finally {
