@@ -106,7 +106,9 @@ public abstract class RunnerResult<T extends RunnerResult> {
     }
 
     public void addDetail(T detail) {
-        details.add(detail);
+        synchronized (details) {
+            details.add(detail);
+        }
         Platform.runLater(() -> trackSummaryAgainstAttionalDetail(detail));
     }
 
@@ -116,11 +118,15 @@ public abstract class RunnerResult<T extends RunnerResult> {
     }
     
     private void recalculatePercentSuccess(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-        percentSuccess.set(details.stream().map(RunnerResult::percentSuccess).map(DoubleProperty::get).reduce(0.0, Double::sum) / (double) details.size());
+        synchronized (details) {
+            percentSuccess.set(details.stream().map(RunnerResult::percentSuccess).map(DoubleProperty::get).reduce(0.0, Double::sum) / (double) details.size());
+        }
     }
 
     private void recalculatePercentComplete(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-        percentComplete.set(details.stream().map(RunnerResult::percentComplete).map(DoubleProperty::get).reduce(0.0, Double::sum) / (double) details.size());        
+        synchronized (details) {
+            percentComplete.set(details.stream().map(RunnerResult::percentComplete).map(DoubleProperty::get).reduce(0.0, Double::sum) / (double) details.size());        
+        }
     }
 
     abstract public String toHtml(int level);
