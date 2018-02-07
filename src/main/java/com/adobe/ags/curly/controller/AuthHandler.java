@@ -101,6 +101,7 @@ public class AuthHandler {
 
             return HttpClients.custom()
                     .setSSLSocketFactory(sslsf)
+                    .setConnectionManagerShared(true)
                     .setDefaultCredentialsProvider(getCredentialsProvider())
                     .build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException ex) {
