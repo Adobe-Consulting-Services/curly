@@ -96,7 +96,7 @@ public class ErrorBehaviorTest {
     @Test
     public void testHappyPath() throws IOException, ParseException {
         List<Action> actions = Arrays.asList(successAction(), successAction(), successAction(), successAction(), successAction());
-        ActionGroupRunner runner = new ActionGroupRunner("Happy Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
+        ActionGroupRunner runner = new ActionGroupRunner("Happy Test", ignore -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
         assertResults(runner.getResult(), true, true);
     }
@@ -105,7 +105,7 @@ public class ErrorBehaviorTest {
     public void testGlobalIgnore() throws IOException, ParseException {
         ApplicationState.getInstance().errorBehaviorProperty().set(ErrorBehavior.IGNORE);
         List<Action> actions = Arrays.asList(failureAction(), failureAction(), failureAction());
-        ActionGroupRunner runner = new ActionGroupRunner("Global Ignore Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
+        ActionGroupRunner runner = new ActionGroupRunner("Global Ignore Test", ignore -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
         assertResults(runner.getResult(), false, true);
     }
@@ -118,7 +118,7 @@ public class ErrorBehaviorTest {
         fail1.setErrorBehavior(ErrorBehavior.IGNORE);
         fail2.setErrorBehavior(ErrorBehavior.IGNORE);
         List<Action> actions = Arrays.asList(fail1, fail2);
-        ActionGroupRunner runner = new ActionGroupRunner("Action Ignore Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
+        ActionGroupRunner runner = new ActionGroupRunner("Action Ignore Test", ignore -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
         assertResults(runner.getResult(), false, true);
     }
@@ -131,7 +131,7 @@ public class ErrorBehaviorTest {
         fail1.setErrorBehavior(ErrorBehavior.SKIP_IF_SUCCESSFUL);
         fail2.setErrorBehavior(ErrorBehavior.SKIP_IF_SUCCESSFUL);
         List<Action> actions = Arrays.asList(fail1, fail2);
-        ActionGroupRunner runner = new ActionGroupRunner("Action Require Failure Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
+        ActionGroupRunner runner = new ActionGroupRunner("Action Require Failure Test", ignore -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
         assertResults(runner.getResult(), false, true);
     }
@@ -144,7 +144,7 @@ public class ErrorBehaviorTest {
         fail1.setErrorBehavior(ErrorBehavior.SKIP_IF_SUCCESSFUL);
         fail2.setErrorBehavior(ErrorBehavior.SKIP_IF_SUCCESSFUL);
         List<Action> actions = Arrays.asList(fail1, fail2);
-        ActionGroupRunner runner = new ActionGroupRunner("Action Require Failure Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
+        ActionGroupRunner runner = new ActionGroupRunner("Action Require Failure Test", ignore -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
         assertResults(runner.getResult(), false, false);
     }
@@ -155,7 +155,7 @@ public class ErrorBehaviorTest {
         Action fail1 = failureAction();
         Action fail2 = failureAction();
         List<Action> actions = Arrays.asList(fail1, fail2);
-        ActionGroupRunner runner = new ActionGroupRunner("Action Halt Test", () -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
+        ActionGroupRunner runner = new ActionGroupRunner("Action Halt Test", ignore -> client, actions, Collections.EMPTY_MAP, Collections.EMPTY_SET);
         runner.run();
         assertResults(runner.getResult(), false, false);
         assertFalse(ApplicationState.getInstance().runningProperty().get());
