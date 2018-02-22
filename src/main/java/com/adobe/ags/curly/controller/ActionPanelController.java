@@ -148,6 +148,7 @@ public class ActionPanelController {
             if (source.getDelay() > 0) {
                 delayField.setText(Long.toString(source.getDelay()));
             }
+            errorBehaviorCombobox.setValue(source.getErrorBehavior());
         } else {
             this.source = new Action();
         }
