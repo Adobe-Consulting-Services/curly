@@ -282,7 +282,12 @@ public class DataImporterController {
             case Cell.CELL_TYPE_BLANK:
                 return null;
             case Cell.CELL_TYPE_NUMERIC:
-                return Double.toString(cell.getNumericCellValue());
+                double num = cell.getNumericCellValue();
+                if (num == Math.floor(num)) {
+                    return Integer.toString((int) num);
+                } else {
+                    return Double.toString(cell.getNumericCellValue());
+                }
             case Cell.CELL_TYPE_STRING:
                 return cell.getStringCellValue();
             default:
