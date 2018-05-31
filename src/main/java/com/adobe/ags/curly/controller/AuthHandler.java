@@ -24,11 +24,6 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,24 +33,14 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
 
 public class AuthHandler {
 
@@ -93,21 +78,7 @@ public class AuthHandler {
     }
 
     public CloseableHttpClient getAuthenticatedClient() {
-        try {
-            SSLContextBuilder builder = new SSLContextBuilder();
-            builder.loadTrustMaterial(new TrustSelfSignedStrategy());
-            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
-                    builder.build(), NoopHostnameVerifier.INSTANCE);
-
-            return HttpClients.custom()
-                    .setSSLSocketFactory(sslsf)
-                    .setConnectionManagerShared(true)
-                    .setDefaultCredentialsProvider(getCredentialsProvider())
-                    .build();
-        } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException ex) {
-            Logger.getLogger(AuthHandler.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return ConnectionManager.getInstance().getAuthenticatedClient(getCredentialsProvider());
     }
 
     private CredentialsProvider getCredentialsProvider() {
@@ -209,9 +180,6 @@ public class AuthHandler {
         byte[] ip = address.getAddress();
         // Detect TWC rr.com redirects -- note that bytes are signed values 
         // so we have alias them back to positive integers first
-        if ((ip[0] & 0x0ff) == 198 && (ip[1] & 0x0ff) == 105) {
-            return true;
-        }
-        return false;
+        return (ip[0] & 0x0ff) == 198 && (ip[1] & 0x0ff) == 105;
     }
 }

@@ -228,7 +228,7 @@ public class AppController {
         List<Integer> oneThroughNine = IntStream.range(1, 10).boxed().collect(Collectors.toList());
         concurencyChoice.setItems(new ObservableListWrapper<>(oneThroughNine));
         concurencyChoice.selectionModelProperty().addListener((prop, oldValue, newValue)
-                -> ConnectionManager.getInstance().setPoolSize(newValue.getSelectedItem()));
+                -> ConnectionManager.getInstance().resetConnectionManager(newValue.getSelectedItem()));
         Platform.runLater(() -> concurencyChoice.getSelectionModel().selectFirst());
 
         batchSize.textProperty().addListener((property, oldValue, newValue) -> updateBatchSize(newValue));
@@ -302,7 +302,6 @@ public class AppController {
             if (newValue != null && !newValue.isEmpty()) {
                 Platform.runLater(()->batchSize.setText(null));
             }
-            return;
         } else {
             batchNumberChoice.setDisable(false);
             int numBatches = (batchDataTable.getItems().size() + batchSizeValue - 1) / batchSizeValue;

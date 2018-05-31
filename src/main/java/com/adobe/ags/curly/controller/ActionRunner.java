@@ -23,13 +23,11 @@ import com.adobe.ags.curly.model.ActionUtils;
 import com.adobe.ags.curly.xml.Action;
 import com.google.gson.internal.LinkedTreeMap;
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,12 +35,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -139,7 +135,7 @@ public class ActionRunner implements Runnable {
             addHeaders(request);
             Optional<Exception> ex = processor.apply((CloseableHttpClient client) -> {
                 try {
-                    CloseableHttpResponse httpResponse = client.execute(request, ConnectionManager.getContextForConnection(client));
+                    CloseableHttpResponse httpResponse = client.execute(request, ConnectionManager.getContext());
                     response.processHttpResponse(httpResponse, action.getResultType());
                     EntityUtils.consume(httpResponse.getEntity());
                     return Optional.empty();
@@ -429,7 +425,7 @@ public class ActionRunner implements Runnable {
                     // fix for removing JCR values (setting them to an empty
                     // string deletes them from the JCR)
                     if (null == newParamValue) {
-                        newParamValue = new String("");
+                        newParamValue = "";
                     }
 
                     newParamValue = newParamValue.replaceAll(variableNameMatchPattern, variableValue);

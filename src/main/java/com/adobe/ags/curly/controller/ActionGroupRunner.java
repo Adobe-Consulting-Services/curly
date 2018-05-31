@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
@@ -73,10 +72,14 @@ public class ActionGroupRunner implements TaskRunner {
         }
         Optional<Exception> ex = process.apply(client);
         if (ex.isPresent() && ex.get() instanceof IllegalStateException) {
+            System.err.println("Error in HTTP request - RETRYING: " + ex.get().getMessage());
+            ex.get().printStackTrace();
             client = clientSupplier.apply(true);
             ex = process.apply(client);
         }
         if (ex.isPresent()) {
+            System.err.println("Error in HTTP request, abandoning client: " + ex.get().getMessage());
+            ex.get().printStackTrace();
             client = null;
         }
         return ex;
