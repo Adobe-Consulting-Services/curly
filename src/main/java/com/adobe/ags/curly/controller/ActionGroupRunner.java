@@ -48,7 +48,7 @@ public class ActionGroupRunner implements TaskRunner {
     public ActionGroupRunner(String taskName, Function<Boolean, CloseableHttpClient> clientSupplier, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) throws ParseException {
         this.actions = new LinkedHashMap<>();
         this.clientSupplier = clientSupplier;
-        actions.forEach((Action action)->{
+        actions.forEach((Action action) -> {
             lastAction = action;
             ActionRunner runner = null;
             try {
@@ -66,6 +66,7 @@ public class ActionGroupRunner implements TaskRunner {
     }
 
     CloseableHttpClient client;
+
     private Optional<Exception> withClient(Function<CloseableHttpClient, Optional<Exception>> process) {
         if (client == null) {
             client = clientSupplier.apply(false);
@@ -84,18 +85,18 @@ public class ActionGroupRunner implements TaskRunner {
         }
         return ex;
     }
-    
+
     @Override
     public RunnerResult getResult() {
         return results;
     }
-    
+
     @Override
     public void run() {
         getResult().started().set(true);
         actions.keySet().forEach((Action action) -> {
             ActionRunner runner = actions.get(action);
-            results.addDetail(runner.response);            
+            results.addDetail(runner.response);
         });
         actions.keySet().forEach((Action action) -> {
             if (!ApplicationState.getInstance().runningProperty().get() || skipTheRest.get()) {
@@ -103,18 +104,31 @@ public class ActionGroupRunner implements TaskRunner {
             }
             ActionRunner runner = actions.get(action);
             ActionResult response;
-            try {
-                runner.run();
-                if (!runner.response.completelySuccessful().get()) {
-                    handleError();
-                } else if (action.getErrorBehavior() == ErrorBehavior.SKIP_IF_SUCCESSFUL) {
-                    skipTheRest.set(true);
+            int retry = action.getErrorBehavior() == ErrorBehavior.RETRY ? 3 : 1;
+            while (retry-- >= 0) {
+                try {
+                    runner.run();
+                    if (!runner.response.completelySuccessful().get()) {
+                        if (retry > 0) {
+                            System.err.println("Error in HTTP request - RETRYING " + runner.URL);
+                            Thread.sleep(250);
+                            continue;
+                        } else {
+                            handleError();
+                        }
+                    } else if (action.getErrorBehavior() == ErrorBehavior.SKIP_IF_SUCCESSFUL) {
+                        skipTheRest.set(true);
+                    } else {
+                        break;
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
+                    if (retry <= 0) {
+                        response = new ActionResult(runner);
+                        response.setException(ex);
+                        handleError();
+                    }
                 }
-            } catch (Exception ex) {
-                Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
-                response = new ActionResult(runner);
-                response.setException(ex);
-                handleError();
             }
         });
         try {
@@ -141,6 +155,7 @@ public class ActionGroupRunner implements TaskRunner {
                 skipTheRest.set(true);
                 break;
             case IGNORE:
+            case RETRY:
                 break;
         }
     }
