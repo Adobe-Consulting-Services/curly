@@ -53,7 +53,7 @@ public class ActionGroupRunnerResult extends RunnerResult<ActionResult> {
     public String toHtml(int level) {
         StringBuilder sb = new StringBuilder();
         sb.append("<tr>");
-        reportRow().forEach(value->sb.append("<td>").append(value.getValue().toString()).append("</td>"));
+        reportRow().forEach(value->sb.append("<td>").append(String.valueOf(value.getValue())).append("</td>"));
         sb.append("</tr>");
         if (level > 1) {
             getDetails().forEach(result->sb.append(result.toHtml(level)));
