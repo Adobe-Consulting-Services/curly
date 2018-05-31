@@ -161,9 +161,10 @@ public class DataImporterController {
         }
     }
 
-    private void openTextFile(File file) throws FileNotFoundException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        setTableData(reader.lines().map(line -> Arrays.asList(line.split("\\t"))).collect(Collectors.toList()));
+    private void openTextFile(File file) throws FileNotFoundException, IOException {
+        try ( BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            setTableData(reader.lines().map(line -> Arrays.asList(line.split("\\t"))).collect(Collectors.toList()));
+        }
     }
 
     private void openLegacyExcel(File file) throws IOException {
@@ -174,20 +175,22 @@ public class DataImporterController {
         openWorkbook(new XSSFWorkbook(file));
     }
 
-    private void openJson(File file) throws FileNotFoundException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        JsonParser parser = new JsonParser();
-        JsonObject data = parser.parse(reader).getAsJsonObject();
+    private void openJson(File file) throws FileNotFoundException, IOException {
+        FileReader fileReader = new FileReader(file);
+        try ( BufferedReader reader = new BufferedReader(fileReader)) {
+            JsonParser parser = new JsonParser();
+            JsonObject data = parser.parse(reader).getAsJsonObject();
 
-        data.entrySet().stream().
-                filter((entry) -> (entry.getValue().isJsonArray())).
-                forEach((entry) -> {
-                    worksheetSelector.getItems().add(entry.getKey());
-                });
+            data.entrySet().stream().
+                    filter((entry) -> (entry.getValue().isJsonArray())).
+                    forEach((entry) -> {
+                        worksheetSelector.getItems().add(entry.getKey());
+                    });
 
-        sheetReader = (String node) -> readNodes(data.get(node).getAsJsonArray());
-        skipFirstSelection.setValue(1);
-        Platform.runLater(() -> worksheetSelector.getSelectionModel().selectFirst());
+            sheetReader = (String node) -> readNodes(data.get(node).getAsJsonArray());
+            skipFirstSelection.setValue(1);
+            Platform.runLater(() -> worksheetSelector.getSelectionModel().selectFirst());
+        }
     }
 
     private List<List<String>> readNodes(JsonArray data) {
@@ -212,15 +215,18 @@ public class DataImporterController {
         return results;
     }
 
-    private void openWorkbook(Workbook workbook) {
-        ObservableList<String> sheets = new ObservableListWrapper<>(new ArrayList<>());
-        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-            worksheetSelector.getItems().add(workbook.getSheetName(i));
+    private void openWorkbook(Workbook workbook) throws IOException {
+        try {
+            for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+                worksheetSelector.getItems().add(workbook.getSheetName(i));
+            }
+
+            sheetReader = (String sheetName) -> readSheet(workbook.getSheet(sheetName));
+
+            Platform.runLater(() -> worksheetSelector.getSelectionModel().selectFirst());
+        } finally {
+            workbook.close();
         }
-
-        sheetReader = (String sheetName) -> readSheet(workbook.getSheet(sheetName));
-
-        Platform.runLater(() -> worksheetSelector.getSelectionModel().selectFirst());
     }
 
     Callback<String, List<List<String>>> sheetReader = null;
@@ -237,7 +243,7 @@ public class DataImporterController {
         sheet.forEach(row -> {
             List<String> rowData = new ArrayList<>();
             numColumns.set(Math.max(numColumns.get(), row.getLastCellNum()));
-            for (int i=0; i < numColumns.get(); i++) {
+            for (int i = 0; i < numColumns.get(); i++) {
                 Cell cell = row.getCell(i, Row.RETURN_BLANK_AS_NULL);
                 String col = getStringValueFromCell(cell);
                 rowData.add(col);
@@ -271,7 +277,9 @@ public class DataImporterController {
     }
 
     private String getStringValueFromCell(Cell cell) {
-        if (cell == null) return null;
+        if (cell == null) {
+            return null;
+        }
         int cellType = cell.getCellType();
         if (cellType == Cell.CELL_TYPE_FORMULA) {
             cellType = cell.getCachedFormulaResultType();
