@@ -130,7 +130,6 @@ public class ActionGroupRunner implements TaskRunner {
             }
         });
         results.updateComputations();
-        CurlyApp.runNow(()->results.percentComplete().set(1.0));
     }
 
     private void handleError() {
