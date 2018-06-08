@@ -134,8 +134,7 @@ public class ActionRunner implements Runnable {
 
             addHeaders(request);
             Optional<Exception> ex = processor.apply((CloseableHttpClient client) -> {
-                try {
-                    CloseableHttpResponse httpResponse = client.execute(request, ConnectionManager.getContext());
+                try (CloseableHttpResponse httpResponse = client.execute(request, ConnectionManager.getContext())) {                    
                     response.processHttpResponse(httpResponse, action.getResultType());
                     EntityUtils.consume(httpResponse.getEntity());
                     return Optional.empty();
