@@ -107,20 +107,23 @@ public class ActionResult extends RunnerResult<RunnerResult> {
         } else {
             statusKey = COMPLETED_UNSUCCESSFUL;
         }
+        String resultMessage = "";
         if (resultType == ResultType.HTML) {
-            ParsedResponseMessage message = (ParsedResponseMessage) extractHtmlMessage(httpResponse).orElse(UNKNOWN_RESPONSE);
+            ParsedResponseMessage message = extractHtmlMessage(httpResponse).orElse(UNKNOWN_RESPONSE);
             if (message.type == RESULT_TYPE.FAIL) {
                 successfulResponseCode = false;
                 statusKey = COMPLETED_UNSUCCESSFUL;
             }
-            setStatus(statusKey, status.getStatusCode(), status.getReasonPhrase() + " / " + message.message);
+            resultMessage = status.getReasonPhrase() + " / " + message.message;
         } else {
-            setStatus(statusKey, status.getStatusCode(), status.getReasonPhrase());
+            resultMessage = status.getReasonPhrase();
         }
         percentSuccess().set(successfulResponseCode ? 1 : 0);
+        invalidateBindings();
+        setStatus(statusKey, status.getStatusCode(), resultMessage);
     }
 
-    private Optional<Object> extractHtmlMessage(CloseableHttpResponse httpResponse) throws IOException {
+    private Optional<ParsedResponseMessage> extractHtmlMessage(CloseableHttpResponse httpResponse) throws IOException {
         if (httpResponse == null || httpResponse.getEntity() == null) {
             return Optional.empty();
         }
@@ -130,17 +133,19 @@ public class ActionResult extends RunnerResult<RunnerResult> {
             responseMessage = lines.collect(Collectors.toList());
             lines = responseMessage.stream();
         }
-        return lines.map((String line) -> {
-            for (RESULT_TYPE resultType : RESULT_TYPE.values()) {
-                for (Pattern p : resultType.patterns) {
-                    Matcher m = p.matcher(line);
-                    if (m.matches()) {
-                        return new ParsedResponseMessage(resultType, m.group(1));
-                    }
+        return lines.map(this::parseMessagePatterns).filter(Optional::isPresent).findFirst().orElse(Optional.empty());
+    }
+
+    private Optional<ParsedResponseMessage> parseMessagePatterns(String line) {
+        for (RESULT_TYPE resultType : RESULT_TYPE.values()) {
+            for (Pattern p : resultType.patterns) {
+                Matcher m = p.matcher(line);
+                if (m.matches()) {
+                    return Optional.of(new ParsedResponseMessage(resultType, m.group(1)));
                 }
             }
-            return Optional.empty();
-        }).filter(e -> e != null).findFirst();
+        }
+        return Optional.empty();
     }
 
     public void updateProgress(double d) {

@@ -18,16 +18,22 @@ package com.adobe.ags.curly.model;
 import com.adobe.ags.curly.ApplicationState;
 import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.xml.Action;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
 
 public class ActionGroupRunnerResult extends RunnerResult<ActionResult> {
-
+    StringBinding successOrNot;
+    StringBinding completeStatus;
+    StringBinding percentCompleteBinding;
+    List<Binding> allBindings = new ArrayList<>();
+    
     String task;
 
     public ActionGroupRunnerResult(String taskName, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) {
@@ -36,27 +42,38 @@ public class ActionGroupRunnerResult extends RunnerResult<ActionResult> {
     }
 
     private void buildRow(Map<String, String> variables, Set<String> reportColumns) {
-        StringBinding successOrNot = Bindings.when(completelySuccessful())
+        successOrNot = Bindings.when(completelySuccessful())
                 .then(ApplicationState.getMessage(COMPLETED_SUCCESSFUL))
                 .otherwise(ApplicationState.getMessage(COMPLETED_UNSUCCESSFUL));
-        reportRow().add(new ReadOnlyStringWrapper(task));
-        reportRow().add(Bindings.when(Bindings.greaterThanOrEqual(percentComplete(), 1))
+        completeStatus = Bindings.when(Bindings.greaterThanOrEqual(percentComplete(), 1))
                 .then(successOrNot)
-                .otherwise(ApplicationState.getMessage(INCOMPLETE)));
-        reportRow().add(Bindings.createStringBinding(()->
-                String.format("%.0f%%",100.0*percentComplete().get()),percentComplete()));
+                .otherwise(ApplicationState.getMessage(INCOMPLETE));
+        
+        reportRow().add(new ReadOnlyStringWrapper(task));
+        reportRow().add(completeStatus);
+        reportRow().add(percentCompleteString().concat(" complete"));
+        reportRow().add(percentSuccessString().concat(" success"));
         reportRow().add(getDuration());
         reportColumns.forEach((colName) -> reportRow().add(new SimpleStringProperty(variables.get(colName))));
+        allBindings.add(successOrNot);
+        allBindings.add(completeStatus);
+    }
+    
+    @Override
+    public void invalidateBindings() {
+        allBindings.forEach(Binding::invalidate);
+        super.invalidateBindings();
     }
     
     @Override
     public String toHtml(int level) {
+        invalidateBindings();
         StringBuilder sb = new StringBuilder();
         sb.append("<tr>");
         reportRow().forEach(value->sb.append("<td>").append(String.valueOf(value.getValue())).append("</td>"));
         sb.append("</tr>");
         if (level > 1) {
-            getDetails().forEach(result->sb.append(result.toHtml(level)));
+            getDetails().forEach(result-> sb.append(result.toHtml(level)));
         }
         return sb.toString();
     }

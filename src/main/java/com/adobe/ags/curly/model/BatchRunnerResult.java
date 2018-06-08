@@ -17,6 +17,9 @@ package com.adobe.ags.curly.model;
 
 import com.adobe.ags.curly.ApplicationState;
 import static com.adobe.ags.curly.Messages.*;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.LongProperty;
@@ -28,6 +31,7 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
 
     LongProperty timeEllapsed = new SimpleLongProperty(0);
     LongProperty timeRemaining = new SimpleLongProperty(0);
+    List<Binding> allBindings = new ArrayList<>();
 
     public BatchRunnerResult() {
         reportRow().add(new ReadOnlyStringWrapper("Batch run"));
@@ -35,12 +39,15 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
         StringBinding successOrNot = Bindings.when(completelySuccessful())
                 .then(ApplicationState.getMessage(COMPLETED_SUCCESSFUL))
                 .otherwise(ApplicationState.getMessage(COMPLETED_UNSUCCESSFUL));
-        reportRow().add(Bindings.when(completed())
-                .then(successOrNot).otherwise(ApplicationState.getMessage(INCOMPLETE)));
+        StringBinding successMessageBinding = Bindings.when(completed())
+                .then(successOrNot).otherwise(ApplicationState.getMessage(INCOMPLETE));
+        reportRow().add(successMessageBinding);
 
-        reportRow().add(Bindings.createStringBinding(()->
-                String.format("%.0f%%",100.0*percentComplete().get()),percentComplete()));
+        reportRow().add(percentCompleteString().concat(" complete"));
+        reportRow().add(percentSuccessString().concat(" success"));
         reportRow().add(getDuration());
+        allBindings.add(successOrNot);
+        allBindings.add(successMessageBinding);
     }
 
     public void start() {
@@ -53,6 +60,7 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
         timeEllapsed.unbind();
         timeRemaining.set(0);
         percentComplete().removeListener(this::updateEstimates);
+        invalidateBindings();
     }
 
     private void updateEstimates(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -71,6 +79,14 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
         return timeRemaining;
     }
 
+    @Override
+    public void invalidateBindings() {
+        super.invalidateBindings();
+        if (allBindings != null) {
+            allBindings.forEach(Binding::invalidate);
+        }
+    }
+    
     @Override
     public String toHtml(int level) {
         StringBuilder sb = new StringBuilder();
