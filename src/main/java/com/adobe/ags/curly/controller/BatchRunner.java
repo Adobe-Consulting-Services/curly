@@ -65,7 +65,6 @@ public class BatchRunner implements TaskRunner {
             executor.allowCoreThreadTimeOut(true);
             result.start();
             buildWorkerPool.run();
-            executor.execute(()->result.stop());
             executor.shutdown();
             executor.awaitTermination(1, TimeUnit.DAYS);
             result.stop();

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -162,4 +163,18 @@ public class CurlyApp extends Application {
         launch(args);
     }
 
+    public static void runNow(Runnable r) {
+        if (Platform.isFxApplicationThread()) {
+            r.run();
+        } else {
+            Semaphore s = new Semaphore(0);
+            Platform.runLater(()->{
+                r.run();
+                synchronized (s) {
+                    s.release();
+                }
+            });
+            s.acquireUninterruptibly();
+        }
+    }
 }

@@ -27,7 +27,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javafx.collections.ObservableList;
 import javax.xml.bind.JAXB;
 
 public class ActionUtils {

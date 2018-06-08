@@ -61,6 +61,14 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
         timeRemaining.set(0);
         percentComplete().removeListener(this::updateEstimates);
         invalidateBindings();
+        waitUntilFinished();
+        updateComputations();
+    }
+    
+    private void waitUntilFinished() {
+        while (details.stream().anyMatch(r -> !r.completed().get())) {
+            Thread.yield();
+        }
     }
 
     private void updateEstimates(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -89,6 +97,7 @@ public class BatchRunnerResult extends RunnerResult<ActionGroupRunnerResult> {
     
     @Override
     public String toHtml(int level) {
+        invalidateBindings();
         StringBuilder sb = new StringBuilder();
         sb.append("<table><tr>");
         reportRow().forEach(value->sb.append("<td>").append(value.getValue().toString()).append("</td>"));

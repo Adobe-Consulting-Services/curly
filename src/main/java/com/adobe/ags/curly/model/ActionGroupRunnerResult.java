@@ -31,7 +31,6 @@ import javafx.beans.property.SimpleStringProperty;
 public class ActionGroupRunnerResult extends RunnerResult<ActionResult> {
     StringBinding successOrNot;
     StringBinding completeStatus;
-    StringBinding percentCompleteBinding;
     List<Binding> allBindings = new ArrayList<>();
     
     String task;

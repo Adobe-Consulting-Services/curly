@@ -15,13 +15,13 @@
  */
 package com.adobe.ags.curly.model;
 
+import com.adobe.ags.curly.CurlyApp;
 import com.sun.javafx.collections.ObservableListWrapper;
 import java.util.ArrayList;
 import java.util.Collections;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.LongBinding;
 import javafx.beans.binding.NumberBinding;
 import javafx.beans.binding.StringBinding;
@@ -38,21 +38,23 @@ import javafx.collections.ObservableList;
 
 public abstract class RunnerResult<T extends RunnerResult> {
 
+    AtomicDouble completeCounter = new AtomicDouble();
+    AtomicDouble successCounter = new AtomicDouble();
     final private DoubleProperty percentSuccess = new SimpleDoubleProperty(0);
     final private DoubleProperty percentComplete = new SimpleDoubleProperty(0);
-    private DoubleBinding totalSuccess = Bindings.createDoubleBinding(() -> 0.0);
-    private DoubleBinding totalComplete = Bindings.createDoubleBinding(() -> 0.0);
-    final private BooleanBinding completedBinding = Bindings.greaterThanOrEqual(percentComplete, 1.0);
-    final private BooleanBinding completelySuccessfulBinding = Bindings.greaterThanOrEqual(percentSuccess(), 1.0);
+    private DoubleProperty totalSuccess = new SimpleDoubleProperty(0);
+    private DoubleProperty totalComplete = new SimpleDoubleProperty(0);
+    final private BooleanBinding completedBinding = Bindings.greaterThanOrEqual(percentComplete, 0.9999999);
+    final private BooleanBinding completelySuccessfulBinding = Bindings.greaterThanOrEqual(percentSuccess(), 0.9999999);
     final private LongBinding durationBinding;
     StringBinding percentCompleteBinding = Bindings.createStringBinding(()->
-            String.format("%.0f%%",100.0*percentComplete().get()),percentComplete());
+            String.format("%.1f%%",100.0*percentComplete().get()),percentComplete());
     StringBinding percentSuccessBinding = Bindings.createStringBinding(()->
-            String.format("%.0f%%",100.0*percentComplete().get()),percentSuccess());
+            String.format("%.1f%%",100.0*percentSuccess().get()),percentSuccess());
 
     final private BooleanProperty started = new SimpleBooleanProperty(false);
     final private ObservableList<ObservableValue> reportRow = new ObservableListWrapper<>(new ArrayList<>());
-    final private ObservableList<T> details = new ObservableListWrapper<>(Collections.synchronizedList(new ArrayList<>()));
+    final protected ObservableList<T> details = new ObservableListWrapper<>(Collections.synchronizedList(new ArrayList<>()));
     final private LongProperty startTime = new SimpleLongProperty(-1);
     final private LongProperty endTime = new SimpleLongProperty(-1);
 
@@ -126,8 +128,6 @@ public abstract class RunnerResult<T extends RunnerResult> {
             details.forEach(RunnerResult::invalidateBindings);
         }
         completelySuccessfulBinding.invalidate();
-        totalComplete.invalidate();
-        totalSuccess.invalidate();
         completedBinding.invalidate();
         durationBinding.invalidate();
         percentCompleteBinding.invalidate();
@@ -156,11 +156,43 @@ public abstract class RunnerResult<T extends RunnerResult> {
         }
         Platform.runLater(() -> trackSummaryAgainstAdditonalDetail(detail));
     }
+    
+    public void updateComputations() {
+        percentSuccess().unbind();
+        percentComplete().unbind();
+        completeCounter.getAndSet(0.0);
+        successCounter.getAndSet(0.0);
+        details.forEach(detail -> {
+            detail.updateComputations();
+            completeCounter.getAndAdd(detail.percentComplete().get());
+            successCounter.getAndAdd(detail.percentSuccess().get());
+        });
+        
+        CurlyApp.runNow(()-> {
+            totalComplete.set(completeCounter.get());
+            totalSuccess.set(successCounter.get());
+            percentSuccess().set(successCounter.get() / details.size());
+            percentComplete().set(completeCounter.get() / details.size());
+        });
+        
+    }
 
     private void trackSummaryAgainstAdditonalDetail(T detail) {
+        detail.percentComplete().addListener((ObservableValue<? extends Number> prop, Number oldVal, Number newVal) -> {
+            double oldV = (oldVal == null) ? 0 : oldVal.doubleValue();
+            double newV = newVal.doubleValue();
+            completeCounter.getAndAdd(-oldV);
+            completeCounter.getAndAdd(newV);
+            Platform.runLater(()->totalComplete.set(completeCounter.get()));
+        });
+        detail.percentSuccess().addListener((ObservableValue<? extends Number> prop, Number oldVal, Number newVal) -> {
+            double oldV = (oldVal == null) ? 0 : oldVal.doubleValue();
+            double newV = newVal.doubleValue();
+            successCounter.getAndAdd(-oldV);
+            successCounter.getAndAdd(newV);
+            Platform.runLater(()->totalSuccess.set(successCounter.get()));
+        });
         synchronized (details) {
-            totalSuccess = totalSuccess.add(detail.percentSuccess());
-            totalComplete = totalComplete.add(detail.percentComplete());
             percentSuccess().bind(totalSuccess.divide(details.size()));
             percentComplete().bind(totalComplete.divide(details.size()));
         }

@@ -16,6 +16,7 @@
 package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.ApplicationState;
+import com.adobe.ags.curly.CurlyApp;
 import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.model.ActionGroupRunnerResult;
 import com.adobe.ags.curly.model.ActionResult;
@@ -48,12 +49,14 @@ public class ActionGroupRunner implements TaskRunner {
     public ActionGroupRunner(String taskName, Function<Boolean, CloseableHttpClient> clientSupplier, List<Action> actions, Map<String, String> variables, Set<String> reportColumns) throws ParseException {
         this.actions = new LinkedHashMap<>();
         this.clientSupplier = clientSupplier;
+        results = new ActionGroupRunnerResult(taskName, actions, variables, reportColumns);
         actions.forEach((Action action) -> {
             lastAction = action;
             ActionRunner runner = null;
             try {
                 runner = new ActionRunner(this::withClient, action, variables);
                 this.actions.put(action, runner);
+                results.addDetail(runner.response);
             } catch (ParseException ex) {
                 Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
                 ActionResult response = new ActionResult(runner);
@@ -62,7 +65,6 @@ public class ActionGroupRunner implements TaskRunner {
             }
         });
         vars = variables;
-        results = new ActionGroupRunnerResult(taskName, actions, variables, reportColumns);
     }
 
     CloseableHttpClient client;
@@ -94,10 +96,6 @@ public class ActionGroupRunner implements TaskRunner {
     @Override
     public void run() {
         getResult().started().set(true);
-        actions.keySet().forEach((Action action) -> {
-            ActionRunner runner = actions.get(action);
-            results.addDetail(runner.response);
-        });
         actions.keySet().forEach((Action action) -> {
             if (!ApplicationState.getInstance().runningProperty().get() || skipTheRest.get()) {
                 return;
@@ -131,13 +129,8 @@ public class ActionGroupRunner implements TaskRunner {
                 }
             }
         });
-        try {
-            if (client != null) {
-                client.close();
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        results.updateComputations();
+        CurlyApp.runNow(()->results.percentComplete().set(1.0));
     }
 
     private void handleError() {

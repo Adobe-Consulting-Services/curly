@@ -93,11 +93,17 @@ public class ActionResult extends RunnerResult<RunnerResult> {
     }
 
     public void setException(Exception ex) {
+        percentSuccess().unbind();
         percentSuccess().set(0);
         failureCause = ex;
         setStatus(COMPLETED_UNSUCCESSFUL, -1, ex.getMessage());
     }
 
+    @Override
+    public void updateComputations() {
+        // Do nothing, this action either worked or it didn't.
+    }
+    
     public void processHttpResponse(CloseableHttpResponse httpResponse, ResultType resultType) throws IOException {
         StatusLine status = httpResponse.getStatusLine();
         String statusKey = COMPLETED_SUCCESSFUL;
@@ -118,6 +124,7 @@ public class ActionResult extends RunnerResult<RunnerResult> {
         } else {
             resultMessage = status.getReasonPhrase();
         }
+        percentSuccess().unbind();
         percentSuccess().set(successfulResponseCode ? 1 : 0);
         invalidateBindings();
         setStatus(statusKey, status.getStatusCode(), resultMessage);
@@ -153,12 +160,12 @@ public class ActionResult extends RunnerResult<RunnerResult> {
             percentComplete().set(d);
         });
     }
-
+    
     @Override
     public String toHtml(int level) {
         StringBuilder sb = new StringBuilder();
         sb.append("<tr>");
-        reportRow().forEach(value -> sb.append("<td>").append(value.getValue().toString()).append("</td>"));
+        reportRow().forEach(value -> sb.append("<td>").append(String.valueOf(value.getValue())).append("</td>"));
 
         sb.append("<td><pre>");
         if (responseMessage != null) {
