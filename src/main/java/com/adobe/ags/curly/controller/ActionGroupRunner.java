@@ -59,7 +59,8 @@ public class ActionGroupRunner implements TaskRunner {
                 results.addDetail(runner.response);
             } catch (ParseException ex) {
                 Logger.getLogger(ActionGroupRunner.class.getName()).log(Level.SEVERE, null, ex);
-                ActionResult response = new ActionResult(runner);
+                ActionResult response = new ActionResult(action.getName(), ex);
+                results.addDetail(response);
                 response.setException(ex);
                 handleError();
             }

@@ -83,6 +83,15 @@ public class ActionResult extends RunnerResult<RunnerResult> {
         reportRow().add(getDuration());
         setStatus(NOT_STARTED, 0, "");
     }
+    
+    public ActionResult(String name, Exception ex) {
+        reportRow().add(new SimpleStringProperty(name));
+        reportRow().add(new SimpleStringProperty("Failure"));
+        reportRow().add(new SimpleIntegerProperty(0));
+        reportRow().add(new SimpleStringProperty(""));
+        reportRow().add(getDuration());
+        setException(ex);
+    }   
 
     private void setStatus(String key, int responseCode, String statusMessage) {
         Platform.runLater(() -> {
@@ -95,6 +104,8 @@ public class ActionResult extends RunnerResult<RunnerResult> {
     public void setException(Exception ex) {
         percentSuccess().unbind();
         percentSuccess().set(0);
+        percentComplete().unbind();
+        percentComplete().set(1.0);
         failureCause = ex;
         setStatus(COMPLETED_UNSUCCESSFUL, -1, ex.getMessage());
     }
