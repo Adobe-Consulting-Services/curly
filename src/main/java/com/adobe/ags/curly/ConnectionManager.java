@@ -40,6 +40,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -48,6 +49,7 @@ import org.apache.http.ssl.SSLContextBuilder;
 
 public class ConnectionManager {
 
+    static public boolean USE_LOGIN_COOKIE = true;
     static private ConnectionManager singleton;
 
     static public ConnectionManager getInstance() {
@@ -106,19 +108,23 @@ public class ConnectionManager {
 
     public CloseableHttpClient getAuthenticatedClient(CredentialsProvider creds) {
         resetConnectionManager(httpPoolSize);
-        CloseableHttpClient client = HttpClients.custom()
-                .setDefaultCredentialsProvider(creds)
+        HttpClientBuilder builder = HttpClients.custom()
                 .setDefaultCookieStore(cookieStore)
                 .setConnectionManager(connectionManager)
                 .setConnectionManagerShared(true)
-                .setRedirectStrategy(new LaxRedirectStrategy())
-                .build();
-        return client;
+                .setRedirectStrategy(new LaxRedirectStrategy());
+        if (!USE_LOGIN_COOKIE) {
+            builder.setDefaultCredentialsProvider(creds);
+        }
+        return builder.build();
     }
 
     private static final String LOGIN_URL = "/libs/granite/core/content/login.html/j_security_check";
 
     public static int performLogin(CloseableHttpClient client, CredentialsProvider creds, String urlBase) throws IOException {
+        if (!USE_LOGIN_COOKIE) {
+            return -1;
+        }
         UsernamePasswordCredentials loginCreds = (UsernamePasswordCredentials) creds.getCredentials(AuthScope.ANY);
         try {
             HttpPost post = new HttpPost(urlBase + LOGIN_URL);
