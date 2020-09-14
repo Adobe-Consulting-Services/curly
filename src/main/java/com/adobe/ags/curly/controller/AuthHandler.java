@@ -78,7 +78,7 @@ public class AuthHandler {
         return builder.toString();
     }
 
-    public CloseableHttpClient getAuthenticatedClient() throws IOException {
+    public CloseableHttpClient getAuthenticatedClient() {
         CredentialsProvider creds = getCredentialsProvider();
         CloseableHttpClient connection = ConnectionManager.getInstance().getAuthenticatedClient(creds);
         ConnectionManager.performLogin(connection, creds, getUrlBase());

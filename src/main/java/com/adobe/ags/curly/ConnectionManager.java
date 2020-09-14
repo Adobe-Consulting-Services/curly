@@ -16,7 +16,6 @@
 package com.adobe.ags.curly;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -121,7 +120,7 @@ public class ConnectionManager {
 
     private static final String LOGIN_URL = "/libs/granite/core/content/login.html/j_security_check";
 
-    public static int performLogin(CloseableHttpClient client, CredentialsProvider creds, String urlBase) throws IOException {
+    public static int performLogin(CloseableHttpClient client, CredentialsProvider creds, String urlBase) {
         if (!USE_LOGIN_COOKIE) {
             return -1;
         }
@@ -135,7 +134,7 @@ public class ConnectionManager {
             post.setEntity(new UrlEncodedFormEntity(params));
             int responseCode = client.execute(post).getStatusLine().getStatusCode();
             return responseCode;
-        } catch (UnsupportedEncodingException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(ConnectionManager.class.getName()).log(Level.SEVERE, null, ex);
             return -1;
         }
