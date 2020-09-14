@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2015 Adobe.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,27 +15,35 @@
  */
 package com.adobe.ags.curly;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.protocol.HttpContext;
+import org.apache.http.impl.client.LaxRedirectStrategy;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContextBuilder;
 
 public class ConnectionManager {
@@ -98,16 +106,36 @@ public class ConnectionManager {
 
     public CloseableHttpClient getAuthenticatedClient(CredentialsProvider creds) {
         resetConnectionManager(httpPoolSize);
-        return HttpClients.custom()
+        CloseableHttpClient client = HttpClients.custom()
                 .setDefaultCredentialsProvider(creds)
                 .setDefaultCookieStore(cookieStore)
                 .setConnectionManager(connectionManager)
                 .setConnectionManagerShared(true)
                 .setRedirectStrategy(new LaxRedirectStrategy())
                 .build();
+        return client;
     }
 
-    public static HttpContext getContext() {
+    private static final String LOGIN_URL = "/libs/granite/core/content/login.html/j_security_check";
+
+    public static int performLogin(CloseableHttpClient client, CredentialsProvider creds, String urlBase) throws IOException {
+        UsernamePasswordCredentials loginCreds = (UsernamePasswordCredentials) creds.getCredentials(AuthScope.ANY);
+        try {
+            HttpPost post = new HttpPost(urlBase + LOGIN_URL);
+            ArrayList<NameValuePair> params = new ArrayList<>();
+            params.add(new BasicNameValuePair("j_validate", "true"));
+            params.add(new BasicNameValuePair("j_username", loginCreds.getUserName()));
+            params.add(new BasicNameValuePair("j_password", loginCreds.getPassword()));
+            post.setEntity(new UrlEncodedFormEntity(params));
+            int responseCode = client.execute(post).getStatusLine().getStatusCode();
+            return responseCode;
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(ConnectionManager.class.getName()).log(Level.SEVERE, null, ex);
+            return -1;
+        }
+    }
+
+    public static HttpClientContext getContext() {
         return getInstance().sharedContext.get();
     }
 }

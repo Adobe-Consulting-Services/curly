@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2015 Adobe.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,6 @@ package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.ApplicationState;
 import com.adobe.ags.curly.ConnectionManager;
-import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.model.Login;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -41,6 +40,8 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+
+import static com.adobe.ags.curly.Messages.*;
 
 public class AuthHandler {
 
@@ -77,8 +78,11 @@ public class AuthHandler {
         return builder.toString();
     }
 
-    public CloseableHttpClient getAuthenticatedClient() {
-        return ConnectionManager.getInstance().getAuthenticatedClient(getCredentialsProvider());
+    public CloseableHttpClient getAuthenticatedClient() throws IOException {
+        CredentialsProvider creds = getCredentialsProvider();
+        CloseableHttpClient connection = ConnectionManager.getInstance().getAuthenticatedClient(creds);
+        ConnectionManager.performLogin(connection, creds, getUrlBase());
+        return connection;
     }
 
     private CredentialsProvider getCredentialsProvider() {
@@ -178,7 +182,7 @@ public class AuthHandler {
      */
     private boolean isDnsRedirect(InetAddress address) {
         byte[] ip = address.getAddress();
-        // Detect TWC rr.com redirects -- note that bytes are signed values 
+        // Detect TWC rr.com redirects -- note that bytes are signed values
         // so we have alias them back to positive integers first
         return (ip[0] & 0x0ff) == 198 && (ip[1] & 0x0ff) == 105;
     }

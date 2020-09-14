@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2015 Adobe.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,6 @@ package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.ApplicationState;
 import com.adobe.ags.curly.ConnectionManager;
-import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.model.ActionResult;
 import com.adobe.ags.curly.model.ActionUtils;
 import com.adobe.ags.curly.xml.Action;
@@ -59,6 +58,8 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+
+import static com.adobe.ags.curly.Messages.*;
 
 public class ActionRunner implements Runnable {
 
@@ -134,7 +135,7 @@ public class ActionRunner implements Runnable {
 
             addHeaders(request);
             Optional<Exception> ex = processor.apply((CloseableHttpClient client) -> {
-                try (CloseableHttpResponse httpResponse = client.execute(request, ConnectionManager.getContext())) {                    
+                try (CloseableHttpResponse httpResponse = client.execute(request, ConnectionManager.getContext())) {
                     response.processHttpResponse(httpResponse, action.getResultType());
                     EntityUtils.consume(httpResponse.getEntity());
                     return Optional.empty();
