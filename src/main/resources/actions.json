@@ -184,5 +184,10 @@
         "name": "Delete a project",
         "description": "",
         "command": "-X POST -F:operation=projectdelete -Fpath=${project path|/content/projects/myproject} -F_charset_​=utf-8 -FremoveGroups=${remove groups|true} -FdeleteProjectAssetFolder=${delete asset folder|true} -FterminateProjectWorkflows=${terminate workflows|true} ${server}/content/projects"          
+    },
+    {
+        "name": "Trigger Reindex Operation",
+        "description": "Mark an index to start reindexing, provide the node name (e.g. the part of the path after oak:index/)",
+        "command": "-Freindex=true -Freindex@TypeHint=Boolean  ${server}/oak:index/${Index Name|damAssetLucene}"        
     }
 ]
