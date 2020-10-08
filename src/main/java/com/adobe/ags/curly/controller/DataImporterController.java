@@ -16,7 +16,6 @@
 package com.adobe.ags.curly.controller;
 
 import com.adobe.ags.curly.ApplicationState;
-import static com.adobe.ags.curly.Messages.*;
 import com.adobe.ags.curly.model.ActionUtils;
 import com.adobe.ags.curly.xml.Action;
 import com.google.gson.JsonArray;
@@ -60,10 +59,13 @@ import javafx.util.Callback;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import static com.adobe.ags.curly.Messages.*;
 
 public class DataImporterController {
 
@@ -244,7 +246,7 @@ public class DataImporterController {
             List<String> rowData = new ArrayList<>();
             numColumns.set(Math.max(numColumns.get(), row.getLastCellNum()));
             for (int i = 0; i < numColumns.get(); i++) {
-                Cell cell = row.getCell(i, Row.RETURN_BLANK_AS_NULL);
+                Cell cell = row.getCell(i, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
                 String col = getStringValueFromCell(cell);
                 rowData.add(col);
             }
@@ -280,23 +282,23 @@ public class DataImporterController {
         if (cell == null) {
             return null;
         }
-        int cellType = cell.getCellType();
-        if (cellType == Cell.CELL_TYPE_FORMULA) {
+        CellType cellType = cell.getCellType();
+        if (cellType == CellType.FORMULA) {
             cellType = cell.getCachedFormulaResultType();
         }
         switch (cellType) {
-            case Cell.CELL_TYPE_BOOLEAN:
+            case BOOLEAN:
                 return Boolean.toString(cell.getBooleanCellValue());
-            case Cell.CELL_TYPE_BLANK:
+            case BLANK:
                 return null;
-            case Cell.CELL_TYPE_NUMERIC:
+            case NUMERIC:
                 double num = cell.getNumericCellValue();
                 if (num == Math.floor(num)) {
                     return Integer.toString((int) num);
                 } else {
                     return Double.toString(cell.getNumericCellValue());
                 }
-            case Cell.CELL_TYPE_STRING:
+            case STRING:
                 return cell.getStringCellValue();
             default:
                 return "???";

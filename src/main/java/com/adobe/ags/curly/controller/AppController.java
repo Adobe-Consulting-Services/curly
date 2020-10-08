@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2015 Adobe.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +18,12 @@ package com.adobe.ags.curly.controller;
 import com.adobe.ags.curly.ApplicationState;
 import com.adobe.ags.curly.ConnectionManager;
 import com.adobe.ags.curly.CurlyApp;
-import static com.adobe.ags.curly.Messages.NO_DATA_LOADED;
 import com.adobe.ags.curly.model.ActionUtils;
 import com.adobe.ags.curly.xml.Action;
 import com.adobe.ags.curly.xml.ErrorBehavior;
 import com.sun.javafx.collections.ObservableListWrapper;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +59,8 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+
+import static com.adobe.ags.curly.Messages.NO_DATA_LOADED;
 
 public class AppController {
 
@@ -194,6 +196,18 @@ public class AppController {
         }
     }
 
+    @FXML
+    void showHelp(ActionEvent event) throws IOException {
+        String url = "https://github.com/Adobe-Consulting-Services/curly/wiki/How-to-Use-Curly";
+        Runtime rt = Runtime.getRuntime();
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            rt.exec("rundll32 url.dll,FileProtocolHandler " + url);
+        } else {
+            rt.exec("open " + url);
+        }
+    }
+
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         assert connectionTab != null : "fx:id=\"connectionTab\" was not injected: check your FXML file 'App.fxml'.";
@@ -237,7 +251,7 @@ public class AppController {
         batchDataTable.setPlaceholder(new Label(ApplicationState.getMessage(NO_DATA_LOADED)));
         batchDataTable.setRowFactory((TableView<Map<String, String>> param) -> {
             final TableRow<Map<String, String>> row = new TableRow<>();
-            row.indexProperty().addListener((property, newValue, oldValue)->updateRowHighlight(row));
+            row.indexProperty().addListener((property, newValue, oldValue) -> updateRowHighlight(row));
             highlightedRows.addListener((ListChangeListener.Change<? extends Integer> c) -> updateRowHighlight(row));
             return row;
         });
@@ -300,13 +314,13 @@ public class AppController {
             batchSize.clear();
             batchSizeValue = -1;
             if (newValue != null && !newValue.isEmpty()) {
-                Platform.runLater(()->batchSize.setText(null));
+                Platform.runLater(() -> batchSize.setText(null));
             }
         } else {
             batchNumberChoice.setDisable(false);
             int numBatches = (batchDataTable.getItems().size() + batchSizeValue - 1) / batchSizeValue;
             numBatches = Math.min(numBatches, 50);
-            List<Integer> selections = IntStream.range(1, numBatches+1).boxed().collect(Collectors.toList());
+            List<Integer> selections = IntStream.range(1, numBatches + 1).boxed().collect(Collectors.toList());
             batchNumberChoice.setItems(new ObservableListWrapper<>(selections));
             batchNumberChoice.setValue(1);
         }
@@ -336,9 +350,9 @@ public class AppController {
             b = 200;
         }
         if (row.getIndex() % 2 == 1) {
-            r = Math.max(0, r-16);
-            g = Math.max(0, g-16);
-            b = Math.max(0, b-16);
+            r = Math.max(0, r - 16);
+            g = Math.max(0, g - 16);
+            b = Math.max(0, b - 16);
         }
         row.setBackground(new Background(new BackgroundFill(Color.rgb(r, g, b), null, null)));
     }
