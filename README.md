@@ -13,4 +13,6 @@ More information about Curly is available in the wiki:
 + [Reporting](https://github.com/badvision/curly/wiki/Reporting)
 
 ## Getting Curly
-Right now I don't have a release process in place, and with Java 11 that complicates things now that I have to include platform-specific JFX libraries.  Once I get this worked out I'll update this page with download links.  In the meantime you can grab the source and build with maven (mvn install) and the full release jar will be in your target folder when it completes.  Note that if you build on Windows, you will have a windows-only build, and so on.  This is, again, because I have to include JFX native libraries since Oracle in their infinite wisdom (ha!) decided it was a great idea to remove JavaFX from the standard Java Runtime builds from Java 9 onward.
+The 2.0 release is here!   Note that you should download the version specific to which OS you're running.  If you are on Linux, you can build for your platform as well, I just don't ship a build due to low demand.
+
+https://github.com/Adobe-Consulting-Services/curly/releases/tag/2.0-FINAL
