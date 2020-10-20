@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2015 Adobe.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,7 +76,7 @@ public class ActionUtils {
         out.getAction().addAll(actions);
         JAXB.marshal(out, targetFile);
     }
-    
+
     public static List<Action> getFavoriteList() {
         if (favorites == null) {
             File favoritesFile = getFavoritesFile();
@@ -87,7 +87,7 @@ public class ActionUtils {
             }
         }
         return favorites;
-    }    
+    }
 
     public static boolean isFavorite(Action item) {
         return isFavorite(item.getName());
@@ -96,7 +96,7 @@ public class ActionUtils {
     public static boolean isFavorite(String name) {
         return name != null
                 && !name.isEmpty()
-                && getFavoriteList().stream().anyMatch(action -> action.getName().equalsIgnoreCase(name));
+                && getFavoriteList().stream().anyMatch(action -> action != null && action.getName() != null && name.equalsIgnoreCase(action.getName()));
     }
 
     public static void addFavorite(Action item) {
